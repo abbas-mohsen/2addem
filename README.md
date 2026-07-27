@@ -1,7 +1,11 @@
-# Hirefold
+# 2addem · قدّم
 
 A two-sided hiring platform in the MERN stack, modelled on join.com. Candidates browse a public
 job board and apply with a resume; recruiters publish roles and work applicants through a pipeline.
+
+The name is the Levantine imperative **قدّم** — *"apply"* — written the way Lebanese actually type
+it, with `2` standing in for the glottal ق. The mark is that `2` with its base stroke running out
+into an arrow; the root ق-د-م means *to step forward*.
 
 > Status: **Phase 1 complete** — the app runs end to end. Phase 2 (kanban ATS, dashboards, email)
 > and Phase 3 (interviews, admin, seed data) are not built yet. See [Roadmap](#roadmap).

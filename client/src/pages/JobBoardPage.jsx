@@ -64,7 +64,7 @@ export function JobBoardPage() {
     <Container className="py-10 sm:py-14">
       <PageHeader
         title="Open roles"
-        description="Every published role on Hirefold. Filter it down to the ones worth your time."
+        description="Every published role on 2addem. Filter it down to the ones worth your time."
       />
 
       <div className="mt-6">

@@ -61,7 +61,7 @@ export function LandingPage() {
             </h1>
 
             <p className="text-ink-600 mt-5 text-lg leading-relaxed">
-              Hirefold is a two-sided hiring platform: candidates apply in one click and follow every
+              2addem is a two-sided hiring platform: candidates apply in one click and follow every
               step, teams publish roles and run the whole pipeline in one place.
             </p>
 
@@ -80,7 +80,7 @@ export function LandingPage() {
                 <Input
                   type="search"
                   className="h-12 pl-10"
-                  placeholder="Try “React”, “product designer”, “Berlin”…"
+                  placeholder="Try “React”, “product designer”, “Beirut”…"
                   aria-label="Search jobs"
                   value={term}
                   onChange={(event) => setTerm(event.target.value)}
