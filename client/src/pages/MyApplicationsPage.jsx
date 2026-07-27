@@ -13,12 +13,14 @@ import { Pagination } from '../components/ui/Pagination.jsx';
 import { STAGE_ORDER } from '../lib/format.js';
 import { cn } from '../lib/cn.js';
 import { useFormat } from '../hooks/useFormat.js';
+import { useT } from '../i18n/index.jsx';
 
 export function MyApplicationsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const page = Number(searchParams.get('page') ?? 1);
   const justApplied = searchParams.get('applied') === '1';
   const queryClient = useQueryClient();
+  const t = useT();
 
   const query = useQuery({
     queryKey: ['my-applications', page],
@@ -41,11 +43,11 @@ export function MyApplicationsPage() {
   return (
     <Container className="py-10 sm:py-14">
       <PageHeader
-        title="My applications"
-        description="Every role you have applied to, and exactly where each one stands."
+        title={t('applications.title')}
+        description={t('applications.subtitle')}
         actions={
           <Button variant="outline" to="/jobs">
-            Browse more jobs
+            {t('applications.browseMore')}
           </Button>
         }
       />
@@ -59,13 +61,13 @@ export function MyApplicationsPage() {
       {justApplied && (
         <p className="mt-6 flex items-center gap-2 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
           <CheckCircle2 className="size-4 shrink-0" aria-hidden="true" />
-          Your application was sent. The team will see it in their pipeline.
+          {t('applications.justApplied')}
         </p>
       )}
 
       {withdraw.isError && (
         <p role="alert" className="mt-6 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-          {errorMessage(withdraw.error, 'Could not withdraw that application.')}
+          {errorMessage(withdraw.error, t('applications.withdrawFailed'))}
         </p>
       )}
 
@@ -79,9 +81,9 @@ export function MyApplicationsPage() {
         {query.isSuccess && applications.length === 0 && (
           <EmptyState
             icon={FileSearch}
-            title="No applications yet"
-            message="Once you apply to a role it will show up here, with its current stage."
-            action={<Button to="/jobs">Find a role</Button>}
+            title={t('applications.none')}
+            message={t('applications.noneHint')}
+            action={<Button to="/jobs">{t('applications.findRole')}</Button>}
           />
         )}
 
@@ -107,13 +109,15 @@ export function MyApplicationsPage() {
    would be noise on a dashboard that already has an empty state. */
 function UpcomingInterviews({ interviews }) {
   const format = useFormat();
+  const t = useT();
+
   if (interviews.length === 0) return null;
 
   return (
     <section className="border-brand-200 bg-brand-50/60 rounded-card mt-6 border p-5">
       <h2 className="text-brand-900 flex items-center gap-2 text-base font-semibold">
         <CalendarClock className="size-4" aria-hidden="true" />
-        Upcoming interview{interviews.length === 1 ? '' : 's'}
+        {t('applications.upcomingInterviews', { count: interviews.length })}
       </h2>
 
       <ul className="mt-3 space-y-3">
@@ -132,7 +136,8 @@ function UpcomingInterviews({ interviews }) {
                   <span>{format.dateTime(interview.scheduledFor)}</span>
                   <span className="inline-flex items-center gap-1">
                     <Icon className="size-3.5" aria-hidden="true" />
-                    {format.interviewFormat(interview.locationType)} · {interview.durationMins} min
+                    {format.interviewFormat(interview.locationType)} ·{' '}
+                    {t('applicant.minutes', { count: interview.durationMins })}
                   </span>
                 </p>
                 {interview.notes && (
@@ -143,7 +148,7 @@ function UpcomingInterviews({ interviews }) {
               {interview.location &&
                 (interview.locationType === 'video' && interview.location.startsWith('http') ? (
                   <Button as="a" size="sm" href={interview.location} target="_blank" rel="noreferrer">
-                    Join call
+                    {t('applications.joinCall')}
                   </Button>
                 ) : (
                   <span className="text-ink-500 text-xs">{interview.location}</span>
@@ -159,14 +164,15 @@ function UpcomingInterviews({ interviews }) {
 /* Counts come from the current page rather than a dedicated endpoint — a
    candidate's list is small, and it keeps the dashboard to one request. */
 function ApplicationSummary({ meta, applications }) {
+  const t = useT();
   const active = applications.filter((a) => a.status === 'active');
   const inProgress = active.filter((a) => ['screening', 'interview', 'offer'].includes(a.stage));
   const decided = active.filter((a) => ['hired', 'rejected'].includes(a.stage));
 
   const tiles = [
-    { label: 'Applications', value: meta?.total ?? applications.length },
-    { label: 'In progress', value: inProgress.length },
-    { label: 'Decided', value: decided.length },
+    { label: t('applications.total'), value: meta?.total ?? applications.length },
+    { label: t('applications.inProgress'), value: inProgress.length },
+    { label: t('applications.decided'), value: decided.length },
   ];
 
   return (
@@ -183,6 +189,7 @@ function ApplicationSummary({ meta, applications }) {
 
 function ApplicationRow({ application, onWithdraw, withdrawing }) {
   const format = useFormat();
+  const t = useT();
   const { job, stage, status } = application;
   const withdrawn = status === 'withdrawn';
   const decided = ['hired', 'rejected'].includes(stage);
@@ -204,25 +211,26 @@ function ApplicationRow({ application, onWithdraw, withdrawing }) {
                   {job.title}
                 </Link>
               ) : (
-                'Role removed'
+                t('applications.roleRemoved')
               )}
             </h2>
             <p className="text-ink-500 mt-0.5 text-sm">
-              {job?.company?.name} · applied {format.relative(application.createdAt)}
+              {job?.company?.name} ·{' '}
+              {t('applications.appliedRelative', { when: format.relative(application.createdAt) })}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           {withdrawn ? (
-            <Badge tone="neutral">Withdrawn</Badge>
+            <Badge tone="neutral">{t('applications.withdrawn')}</Badge>
           ) : (
             <Badge tone={STAGE_TONES[stage]}>{format.stage(stage)}</Badge>
           )}
 
           {!withdrawn && !decided && (
             <Button variant="ghost" size="sm" onClick={onWithdraw} loading={withdrawing}>
-              Withdraw
+              {t('applications.withdraw')}
             </Button>
           )}
         </div>
@@ -236,10 +244,11 @@ function ApplicationRow({ application, onWithdraw, withdrawing }) {
 /* Rejections are terminal, so the ladder is replaced rather than shown greyed. */
 function StageTrack({ stage }) {
   const format = useFormat();
+  const t = useT();
   if (stage === 'rejected') {
     return (
       <p className="text-ink-500 mt-4 text-sm">
-        The team decided not to move forward this time.
+        {t('applications.rejected')}
       </p>
     );
   }
@@ -248,7 +257,7 @@ function StageTrack({ stage }) {
   const currentIndex = track.indexOf(stage);
 
   return (
-    <ol className="mt-5 flex gap-1.5" aria-label={`Current stage: ${format.stage(stage)}`}>
+    <ol className="mt-5 flex gap-1.5" aria-label={format.stage(stage)}>
       {track.map((item, index) => (
         <li key={item} className="flex-1">
           <span

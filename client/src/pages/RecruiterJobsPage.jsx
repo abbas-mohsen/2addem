@@ -13,12 +13,13 @@ import { Pagination } from '../components/ui/Pagination.jsx';
 
 import { cn } from '../lib/cn.js';
 import { useFormat } from '../hooks/useFormat.js';
+import { useT } from '../i18n/index.jsx';
 
 const TABS = [
-  { value: '', label: 'All' },
-  { value: 'published', label: 'Published' },
-  { value: 'draft', label: 'Drafts' },
-  { value: 'closed', label: 'Closed' },
+  { value: '', key: 'recruiter.tabAll' },
+  { value: 'published', key: 'recruiter.tabPublished' },
+  { value: 'draft', key: 'recruiter.tabDrafts' },
+  { value: 'closed', key: 'recruiter.tabClosed' },
 ];
 
 export function RecruiterJobsPage() {
@@ -28,6 +29,8 @@ export function RecruiterJobsPage() {
 
   const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
+  const t = useT();
+  const format = useFormat();
 
   const query = useQuery({
     queryKey: ['my-jobs', status, page],
@@ -46,24 +49,24 @@ export function RecruiterJobsPage() {
   return (
     <Container className="py-10 sm:py-14">
       <PageHeader
-        title="Your jobs"
+        title={t('recruiter.yourJobs')}
         description={
           user?.company?.name
-            ? `Roles posted by ${user.company.name}.`
-            : 'Roles posted by your company.'
+            ? t('recruiter.yourJobsSubtitle', { company: user.company.name })
+            : t('recruiter.yourJobsSubtitleGeneric')
         }
         actions={
           <Button to="/recruiter/jobs/new">
             <Plus className="size-4" aria-hidden="true" />
-            New job
+            {t('recruiter.newJob')}
           </Button>
         }
       />
 
       <div className="mt-6 grid gap-4 sm:grid-cols-3">
-        <StatCard label="Jobs on this page" value={stats.total} />
-        <StatCard label="Published" value={stats.published} />
-        <StatCard label="Applicants" value={stats.applicants} />
+        <StatCard label={t('recruiter.jobsOnPage')} value={stats.total} />
+        <StatCard label={t('recruiter.tabPublished')} value={stats.published} />
+        <StatCard label={t('recruiter.applicantsStat')} value={stats.applicants} />
       </div>
 
       <div className="border-ink-200 mt-8 flex gap-1 border-b" role="tablist">
@@ -81,14 +84,14 @@ export function RecruiterJobsPage() {
                 : 'text-ink-500 hover:text-ink-900 border-transparent'
             )}
           >
-            {tab.label}
+            {t(tab.key)}
           </button>
         ))}
       </div>
 
       {setStatus.isError && (
         <p role="alert" className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-          {errorMessage(setStatus.error, 'Could not update that job.')}
+          {errorMessage(setStatus.error, t('recruiter.updateFailed'))}
         </p>
       )}
 
@@ -102,9 +105,13 @@ export function RecruiterJobsPage() {
         {query.isSuccess && jobs.length === 0 && (
           <EmptyState
             icon={Plus}
-            title={status ? `No ${status} jobs` : 'No jobs yet'}
-            message="Create your first role and publish it to the board when it is ready."
-            action={<Button to="/recruiter/jobs/new">Create a job</Button>}
+            title={
+              status
+                ? t('recruiter.noJobsOfStatus', { status: format.jobStatus(status) })
+                : t('recruiter.noJobsYet')
+            }
+            message={t('recruiter.noJobsHint')}
+            action={<Button to="/recruiter/jobs/new">{t('recruiter.createJob')}</Button>}
           />
         )}
 
@@ -147,6 +154,7 @@ function StatCard({ label, value }) {
 
 function JobRow({ job, onStatusChange, updating }) {
   const format = useFormat();
+  const t = useT();
   return (
     <article className="border-ink-200 rounded-card shadow-card border bg-white p-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -157,46 +165,44 @@ function JobRow({ job, onStatusChange, updating }) {
                 {job.title}
               </Link>
             </h2>
-            <Badge tone={JOB_STATUS_TONES[job.status]} className="capitalize">
-              {job.status}
-            </Badge>
+            <Badge tone={JOB_STATUS_TONES[job.status]}>{format.jobStatus(job.status)}</Badge>
           </div>
 
           <p className="text-ink-500 mt-1 text-sm">
             {job.location || format.remote(job.remote)} · {format.employment(job.employmentType)} ·{' '}
             {job.status === 'published' && job.publishedAt
-              ? `published ${format.relative(job.publishedAt)}`
-              : `created ${format.relative(job.createdAt)}`}
+              ? t('recruiter.publishedRelative', { when: format.relative(job.publishedAt) })
+              : t('recruiter.createdRelative', { when: format.relative(job.createdAt) })}
           </p>
 
           <div className="text-ink-500 mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm">
             <span className="inline-flex items-center gap-1.5">
               <Users className="size-3.5" aria-hidden="true" />
-              {job.applicationCount} applicant{job.applicationCount === 1 ? '' : 's'}
+              {t('common.applicants', { count: job.applicationCount })}
             </span>
             <span className="inline-flex items-center gap-1.5">
               <Eye className="size-3.5" aria-hidden="true" />
-              {job.views} view{job.views === 1 ? '' : 's'}
+              {t('common.views', { count: job.views })}
             </span>
           </div>
         </div>
 
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" to={`/recruiter/jobs/${job._id}/pipeline`}>
-            Pipeline
+            {t('recruiter.pipeline')}
           </Button>
           <Button variant="outline" size="sm" to={`/recruiter/jobs/${job._id}/edit`}>
             <PenLine className="size-4" aria-hidden="true" />
-            Edit
+            {t('recruiter.edit')}
           </Button>
 
           {job.status === 'published' ? (
             <Button variant="ghost" size="sm" loading={updating} onClick={() => onStatusChange('closed')}>
-              Close
+              {t('recruiter.close')}
             </Button>
           ) : (
             <Button size="sm" loading={updating} onClick={() => onStatusChange('published')}>
-              {job.status === 'draft' ? 'Publish' : 'Reopen'}
+              {job.status === 'draft' ? t('recruiter.publish') : t('recruiter.reopen')}
             </Button>
           )}
         </div>

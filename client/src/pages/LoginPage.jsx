@@ -5,11 +5,13 @@ import { errorMessage } from '../api/client.js';
 import { Button } from '../components/ui/Button.jsx';
 import { Field, Input } from '../components/ui/Field.jsx';
 import { AuthShell } from '../components/layout/AuthShell.jsx';
+import { useT } from '../i18n/index.jsx';
 
 export function LoginPage() {
   const signIn = useAuthStore((state) => state.signIn);
   const navigate = useNavigate();
   const location = useLocation();
+  const t = useT();
 
   const [form, setForm] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
@@ -23,8 +25,8 @@ export function LoginPage() {
 
   const validate = () => {
     const next = {};
-    if (!/^\S+@\S+\.\S+$/.test(form.email)) next.email = 'Enter a valid email address';
-    if (!form.password) next.password = 'Enter your password';
+    if (!/^\S+@\S+\.\S+$/.test(form.email)) next.email = t('auth.errors.email');
+    if (!form.password) next.password = t('auth.errors.password');
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -39,7 +41,7 @@ export function LoginPage() {
       const user = await signIn(form);
       navigate(location.state?.from?.pathname ?? homePathFor(user), { replace: true });
     } catch (error) {
-      setSubmitError(errorMessage(error, 'Could not sign you in.'));
+      setSubmitError(errorMessage(error, t('auth.errors.signInFailed')));
     } finally {
       setSubmitting(false);
     }
@@ -47,13 +49,13 @@ export function LoginPage() {
 
   return (
     <AuthShell
-      title="Welcome back"
-      subtitle="Sign in to track your applications or manage your hiring pipeline."
+      title={t('auth.welcomeBack')}
+      subtitle={t('auth.signInSubtitle')}
       footer={
         <>
-          New here?{' '}
+          {t('auth.newHere')}{' '}
           <Link to="/register" className="text-brand-700 font-medium hover:underline">
-            Create an account
+            {t('auth.createOne')}
           </Link>
         </>
       }
@@ -65,7 +67,7 @@ export function LoginPage() {
           </p>
         )}
 
-        <Field label="Email" error={errors.email} required>
+        <Field label={t('auth.email')} error={errors.email} required>
           {(props) => (
             <Input
               {...props}
@@ -79,7 +81,7 @@ export function LoginPage() {
           )}
         </Field>
 
-        <Field label="Password" error={errors.password} required>
+        <Field label={t('auth.password')} error={errors.password} required>
           {(props) => (
             <Input
               {...props}
@@ -94,7 +96,7 @@ export function LoginPage() {
         </Field>
 
         <Button type="submit" className="w-full" loading={submitting}>
-          Sign in
+          {t('auth.signInAction')}
         </Button>
       </form>
     </AuthShell>

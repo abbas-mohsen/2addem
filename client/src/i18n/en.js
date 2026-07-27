@@ -344,6 +344,7 @@ export const en = {
   },
 
   pipeline: {
+    title: 'Pipeline',
     subtitle: '{applicants} · drag a card between columns, or open one to add notes.',
     viewPublicPost: 'View public post',
     openPublicPost: 'Open the public post',
@@ -370,6 +371,9 @@ export const en = {
     tags: 'Tags',
     noTags: 'No tags yet.',
     addTag: 'Add a tag…',
+    // Accessible names stay short; the placeholders above are the longer prompt.
+    addTagLabel: 'Add a tag',
+    addNoteLabel: 'Add a note',
     removeTag: 'Remove tag {tag}',
     coverNote: 'Cover note',
     answers: 'Answers',
@@ -442,6 +446,7 @@ export const en = {
     subtitle:
       'People worth remembering after a role closes. Saved from your pipeline, kept for the next opening.',
     searchPlaceholder: 'Search name, headline or note',
+    searchLabel: 'Search the talent pool',
     tags: 'Tags:',
     empty: 'Your talent pool is empty',
     emptyHint: 'Open any applicant in a pipeline and choose “Save to pool” to keep them here.',

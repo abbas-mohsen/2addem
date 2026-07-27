@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, FileText, UploadCloud, X } from 'lucide-react';
+import { FileText, UploadCloud, X } from 'lucide-react';
 import { applicationsApi, jobsApi } from '../api/endpoints.js';
 import { errorMessage } from '../api/client.js';
 import { Container } from '../components/layout/AppLayout.jsx';
@@ -10,6 +10,8 @@ import { Field, Textarea } from '../components/ui/Field.jsx';
 import { CompanyLogo } from '../components/ui/Logo.jsx';
 import { ErrorState } from '../components/ui/States.jsx';
 import { FormSkeleton } from '../components/ui/Skeletons.jsx';
+import { BackIcon } from '../components/ui/DirectionalIcon.jsx';
+import { useT } from '../i18n/index.jsx';
 import { cn } from '../lib/cn.js';
 
 const MAX_FILE_MB = 5;
@@ -20,6 +22,7 @@ export function ApplyPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
+  const t = useT();
 
   const [file, setFile] = useState(null);
   const [coverLetter, setCoverLetter] = useState('');
@@ -50,11 +53,11 @@ export function ApplyPage() {
 
     if (!candidate) return;
     if (!/\.(pdf|docx?)$/i.test(candidate.name)) {
-      setFileError('Upload a PDF, DOC or DOCX file');
+      setFileError(t('apply.wrongType'));
       return;
     }
     if (candidate.size > MAX_FILE_MB * 1024 * 1024) {
-      setFileError(`Keep the file under ${MAX_FILE_MB}MB`);
+      setFileError(t('apply.tooBig', { max: MAX_FILE_MB }));
       return;
     }
 
@@ -75,7 +78,7 @@ export function ApplyPage() {
     return (
       <Container className="py-14">
         <ErrorState
-          title="Could not load this role"
+          title={t('jobs.couldNotLoad')}
           message={errorMessage(jobQuery.error)}
           onRetry={jobQuery.refetch}
         />
@@ -90,15 +93,15 @@ export function ApplyPage() {
       <Container className="py-14">
         <div className="border-ink-200 rounded-card mx-auto max-w-lg border bg-white p-8 text-center">
           <h1 className="text-xl">
-            {hasApplied ? 'You have already applied' : 'This role is closed'}
+            {hasApplied ? t('apply.alreadyApplied') : t('apply.roleClosed')}
           </h1>
           <p className="text-ink-600 mt-2 text-sm">
             {hasApplied
-              ? 'Track the progress of this application from your dashboard.'
-              : 'The team is no longer accepting applications for this role.'}
+              ? t('apply.alreadyAppliedHint')
+              : t('apply.roleClosedHint')}
           </p>
           <Button to={hasApplied ? '/applications' : '/jobs'} className="mt-5">
-            {hasApplied ? 'View my applications' : 'Browse open roles'}
+            {hasApplied ? t('jobs.viewMyApplications') : t('apply.browseOpen')}
           </Button>
         </div>
       </Container>
@@ -109,7 +112,7 @@ export function ApplyPage() {
     event.preventDefault();
 
     if (!file) {
-      setFileError('A resume is required');
+      setFileError(t('apply.resumeRequired'));
       return;
     }
 
@@ -126,15 +129,15 @@ export function ApplyPage() {
         to={`/jobs/${job.slug}`}
         className="text-ink-500 hover:text-ink-900 inline-flex items-center gap-1.5 text-sm"
       >
-        <ArrowLeft className="size-4" aria-hidden="true" />
-        Back to the role
+        <BackIcon className="size-4" aria-hidden="true" />
+        {t('apply.backToRole')}
       </Link>
 
       <div className="mx-auto mt-5 max-w-2xl">
         <div className="border-ink-200 rounded-card flex items-center gap-4 border bg-white p-5">
           <CompanyLogo company={job.company} />
           <div>
-            <h1 className="text-lg leading-snug">Apply for {job.title}</h1>
+            <h1 className="text-lg leading-snug">{t('apply.title', { title: job.title })}</h1>
             <p className="text-ink-500 text-sm">
               {job.company?.name} · {job.location || 'Remote'}
             </p>
@@ -147,13 +150,13 @@ export function ApplyPage() {
         >
           {mutation.isError && (
             <p role="alert" className="rounded-lg bg-red-50 px-3.5 py-3 text-sm text-red-700">
-              {errorMessage(mutation.error, 'Your application could not be sent.')}
+              {errorMessage(mutation.error, t('apply.failed'))}
             </p>
           )}
 
           <div className="space-y-1.5">
             <span className="text-ink-800 block text-sm font-medium">
-              Resume<span className="text-brand-600 ms-0.5">*</span>
+              {t('apply.resume')}<span className="text-brand-600 ms-0.5">*</span>
             </span>
 
             {file ? (
@@ -167,7 +170,7 @@ export function ApplyPage() {
                   type="button"
                   onClick={() => setFile(null)}
                   className="text-ink-400 hover:text-ink-700 rounded p-1"
-                  aria-label="Remove file"
+                  aria-label={t('apply.removeFile')}
                 >
                   <X className="size-4" />
                 </button>
@@ -192,16 +195,16 @@ export function ApplyPage() {
               >
                 <UploadCloud className="text-ink-400 mx-auto size-7" aria-hidden="true" />
                 <p className="text-ink-700 mt-3 text-sm">
-                  Drag your resume here, or{' '}
+                  {t('apply.dropzone')}{' '}
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     className="text-brand-700 font-medium hover:underline"
                   >
-                    choose a file
+                    {t('apply.chooseFile')}
                   </button>
                 </p>
-                <p className="text-ink-500 mt-1 text-xs">PDF, DOC or DOCX · up to {MAX_FILE_MB}MB</p>
+                <p className="text-ink-500 mt-1 text-xs">{t('apply.fileHint', { max: MAX_FILE_MB })}</p>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -216,15 +219,15 @@ export function ApplyPage() {
           </div>
 
           <Field
-            label="Cover note"
-            hint="Optional, but a few honest sentences go a long way."
+            label={t('apply.coverNote')}
+            hint={t('apply.coverNoteHint')}
           >
             {(props) => (
               <Textarea
                 {...props}
                 rows={7}
                 maxLength={8000}
-                placeholder={`Why ${job.company?.name ?? 'this team'}, and why this role?`}
+                placeholder={t('apply.coverNotePlaceholder', { company: job.company?.name ?? '' })}
                 value={coverLetter}
                 onChange={(event) => setCoverLetter(event.target.value)}
               />
@@ -242,10 +245,10 @@ export function ApplyPage() {
 
           <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             <Button type="button" variant="outline" to={`/jobs/${job.slug}`}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" loading={mutation.isPending}>
-              Send application
+              {t('apply.send')}
             </Button>
           </div>
         </form>

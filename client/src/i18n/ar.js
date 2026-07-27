@@ -382,6 +382,7 @@ export const ar = {
   },
 
   pipeline: {
+    title: 'المسار',
     subtitle: '{applicants} · اسحب البطاقة بين الأعمدة، أو افتح واحدة لإضافة ملاحظات.',
     viewPublicPost: 'عرض الإعلان العام',
     openPublicPost: 'افتح الإعلان العام',
@@ -408,6 +409,8 @@ export const ar = {
     tags: 'الوسوم',
     noTags: 'لا وسوم بعد.',
     addTag: 'أضف وسماً…',
+    addTagLabel: 'إضافة وسم',
+    addNoteLabel: 'إضافة ملاحظة',
     removeTag: 'إزالة الوسم {tag}',
     coverNote: 'الرسالة التعريفية',
     answers: 'الإجابات',
@@ -476,6 +479,7 @@ export const ar = {
     title: 'الكفاءات',
     subtitle: 'أشخاص يستحقون التذكّر بعد إغلاق الوظيفة. محفوظون من مسارك للفرصة القادمة.',
     searchPlaceholder: 'ابحث بالاسم أو العنوان المهني أو الملاحظة',
+    searchLabel: 'ابحث في الكفاءات',
     tags: 'الوسوم:',
     empty: 'قائمة كفاءاتك فارغة',
     emptyHint: 'افتح أي متقدّم في المسار واختر «احفظ في الكفاءات» للاحتفاظ به هنا.',

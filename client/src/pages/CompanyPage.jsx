@@ -9,9 +9,11 @@ import { CompanyLogo } from '../components/ui/Logo.jsx';
 import { EmptyState, ErrorState, Skeleton, SkeletonGroup } from '../components/ui/States.jsx';
 import { ListRowsSkeleton } from '../components/ui/Skeletons.jsx';
 import { JobCard } from '../features/jobs/JobCard.jsx';
+import { useT } from '../i18n/index.jsx';
 
 export function CompanyPage() {
   const { slug } = useParams();
+  const t = useT();
 
   const query = useQuery({
     queryKey: ['company', slug],
@@ -20,7 +22,7 @@ export function CompanyPage() {
 
   if (query.isPending) {
     return (
-      <SkeletonGroup label="Loading company…">
+      <SkeletonGroup>
         <section className="border-ink-200 border-b bg-white">
           <Container className="py-10 sm:py-14">
             <div className="flex flex-wrap items-start gap-5">
@@ -46,13 +48,17 @@ export function CompanyPage() {
     return (
       <Container className="py-14">
         <ErrorState
-          title={query.error?.response?.status === 404 ? 'Company not found' : 'Could not load this company'}
+          title={
+            query.error?.response?.status === 404
+              ? t('company.notFound')
+              : t('company.couldNotLoad')
+          }
           message={errorMessage(query.error)}
           onRetry={query.error?.response?.status === 404 ? undefined : query.refetch}
         />
         <div className="mt-4 text-center">
           <Button variant="outline" to="/jobs">
-            Browse all jobs
+            {t('company.browseAll')}
           </Button>
         </div>
       </Container>
@@ -86,7 +92,7 @@ export function CompanyPage() {
                 {company.size && (
                   <span className="inline-flex items-center gap-1.5">
                     <Users className="size-4" aria-hidden="true" />
-                    {company.size} people
+                    {t('common.people', { size: company.size })}
                   </span>
                 )}
                 {company.website && (
@@ -97,7 +103,7 @@ export function CompanyPage() {
                     className="hover:text-brand-700 inline-flex items-center gap-1.5"
                   >
                     <Globe className="size-4" aria-hidden="true" />
-                    Website
+                    {t('company.website')}
                   </a>
                 )}
               </div>
@@ -112,7 +118,7 @@ export function CompanyPage() {
 
       <Container className="py-10 sm:py-14">
         <h2 className="text-xl">
-          Open roles{' '}
+          {t('company.openRolesCount')}{' '}
           <span className="text-ink-400 font-normal tabular-nums">({jobs.length})</span>
         </h2>
 
@@ -120,9 +126,9 @@ export function CompanyPage() {
           {jobs.length === 0 ? (
             <EmptyState
               icon={Building2}
-              title="No open roles right now"
-              message={`${company.name} is not hiring at the moment. Check back later.`}
-              action={<Button to="/jobs">Browse other jobs</Button>}
+              title={t('company.noOpenRoles')}
+              message={t('company.noOpenRolesHint', { company: company.name })}
+              action={<Button to="/jobs">{t('company.browseOther')}</Button>}
             />
           ) : (
             jobs.map((job) => <JobCard key={job._id} job={{ ...job, company }} />)

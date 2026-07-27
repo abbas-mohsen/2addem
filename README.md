@@ -276,11 +276,14 @@ How it is built:
   renders them in whichever language the reader has chosen.
 - **No webfont.** Arabic faces are appended to the same font stack, so the app stays offline-safe.
 
-**Not yet extracted:** page body copy on the landing page, auth pages, and the recruiter and admin
-screens still renders in English even in Arabic mode. The dictionary entries for all of it are
-already written in `client/src/i18n/`; what remains is wiring those pages to `t()`. Everything
-shared — navigation, footer, job cards, filters, all enum labels, every date, salary and relative
-time — is fully translated.
+Every user-facing string goes through `t()` — landing, auth, board, job detail, apply, the
+candidate tracker, the recruiter dashboard, jobs list, editor, pipeline, applicant panel, company
+pages, talent pool and the admin panel. Dates, salaries, relative times and every enum label are
+locale-bound through a `useFormat()` hook.
+
+The one deliberate exception is **server validation messages**, which stay English. They surface
+rarely, because the client mirrors each rule and shows its own translated message first; the server
+copy is the backstop for anything that slips past.
 
 ### File storage
 
@@ -415,8 +418,7 @@ Sign-in and sign-up are rate limited, so many rapid account switches will start 
 - [x] **Market localization** — Lebanese location autocomplete, fresh-USD salaries, a
       remote-for-abroad filter, freelance as an employment type, and phone numbers on profiles
 - [x] **Arabic + RTL** — i18n layer with Arabic plurals, a language switcher, logical-property
-      layout, direction-aware icons, localised dates/salaries/enums, and notifications rendered
-      from stored parameters. Page body copy on auth, landing and the recruiter/admin screens is
-      still being wired to `t()`.
+      layout, direction-aware icons, localised dates/salaries/enums, notifications rendered from
+      stored parameters, and every page translated.
 
 Explicitly out of scope: multiposting to external job boards, payments, and real AI generation.

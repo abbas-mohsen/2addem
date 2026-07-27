@@ -6,19 +6,20 @@ import { errorMessage, fieldErrors } from '../api/client.js';
 import { Button } from '../components/ui/Button.jsx';
 import { Field, Input } from '../components/ui/Field.jsx';
 import { AuthShell } from '../components/layout/AuthShell.jsx';
+import { useT } from '../i18n/index.jsx';
 import { cn } from '../lib/cn.js';
 
 const ROLES = [
   {
     value: 'candidate',
-    label: "I'm looking for a job",
-    description: 'Apply and track your applications',
+    labelKey: 'auth.roleCandidate',
+    hintKey: 'auth.roleCandidateHint',
     icon: UserRound,
   },
   {
     value: 'recruiter',
-    label: "I'm hiring",
-    description: 'Post roles and manage applicants',
+    labelKey: 'auth.roleRecruiter',
+    hintKey: 'auth.roleRecruiterHint',
     icon: Briefcase,
   },
 ];
@@ -27,6 +28,7 @@ export function RegisterPage() {
   const signUp = useAuthStore((state) => state.signUp);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const t = useT();
 
   const [form, setForm] = useState({
     role: searchParams.get('role') === 'recruiter' ? 'recruiter' : 'candidate',
@@ -48,12 +50,12 @@ export function RegisterPage() {
 
   const validate = () => {
     const next = {};
-    if (form.name.trim().length < 2) next.name = 'Tell us your name';
-    if (!/^\S+@\S+\.\S+$/.test(form.email)) next.email = 'Enter a valid email address';
+    if (form.name.trim().length < 2) next.name = t('auth.errors.name');
+    if (!/^\S+@\S+\.\S+$/.test(form.email)) next.email = t('auth.errors.email');
     // Mirrors the server rule so users are not bounced by a round trip.
-    if (form.password.length < 8) next.password = 'Use at least 8 characters';
+    if (form.password.length < 8) next.password = t('auth.errors.passwordShort');
     if (isRecruiter && form.companyName.trim().length < 2) {
-      next.companyName = 'Enter your company name';
+      next.companyName = t('auth.errors.company');
     }
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -77,7 +79,7 @@ export function RegisterPage() {
       navigate(homePathFor(user), { replace: true });
     } catch (error) {
       setErrors(fieldErrors(error));
-      setSubmitError(errorMessage(error, 'Could not create your account.'));
+      setSubmitError(errorMessage(error, t('auth.errors.signUpFailed')));
     } finally {
       setSubmitting(false);
     }
@@ -85,20 +87,20 @@ export function RegisterPage() {
 
   return (
     <AuthShell
-      title="Create your account"
-      subtitle="One account, whichever side of the table you are on."
+      title={t('auth.createAccount')}
+      subtitle={t('auth.createSubtitle')}
       footer={
         <>
-          Already have an account?{' '}
+          {t('auth.haveAccount')}{' '}
           <Link to="/login" className="text-brand-700 font-medium hover:underline">
-            Sign in
+            {t('auth.signInAction')}
           </Link>
         </>
       }
     >
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
         <fieldset className="grid gap-2 sm:grid-cols-2">
-          <legend className="text-ink-800 mb-2 text-sm font-medium">I want to…</legend>
+          <legend className="text-ink-800 mb-2 text-sm font-medium">{t('auth.iWantTo')}</legend>
           {ROLES.map((role) => {
             const Icon = role.icon;
             const selected = form.role === role.value;
@@ -125,9 +127,9 @@ export function RegisterPage() {
                     className={cn('size-4', selected ? 'text-brand-600' : 'text-ink-400')}
                     aria-hidden="true"
                   />
-                  <span className="text-ink-900 text-sm font-medium">{role.label}</span>
+                  <span className="text-ink-900 text-sm font-medium">{t(role.labelKey)}</span>
                 </span>
-                <span className="text-ink-500 text-xs">{role.description}</span>
+                <span className="text-ink-500 text-xs">{t(role.hintKey)}</span>
               </label>
             );
           })}
@@ -139,7 +141,7 @@ export function RegisterPage() {
           </p>
         )}
 
-        <Field label="Full name" error={errors.name} required>
+        <Field label={t('auth.fullName')} error={errors.name} required>
           {(props) => (
             <Input
               {...props}
@@ -153,7 +155,7 @@ export function RegisterPage() {
         </Field>
 
         {isRecruiter && (
-          <Field label="Company" error={errors.companyName} required>
+          <Field label={t('auth.companyName')} error={errors.companyName} required>
             {(props) => (
               <Input
                 {...props}
@@ -167,7 +169,7 @@ export function RegisterPage() {
           </Field>
         )}
 
-        <Field label="Email" error={errors.email} required>
+        <Field label={t('auth.email')} error={errors.email} required>
           {(props) => (
             <Input
               {...props}
@@ -182,9 +184,9 @@ export function RegisterPage() {
         </Field>
 
         <Field
-          label="Password"
+          label={t('auth.password')}
           error={errors.password}
-          hint="At least 8 characters."
+          hint={t('auth.passwordHint')}
           required
         >
           {(props) => (
@@ -201,7 +203,7 @@ export function RegisterPage() {
         </Field>
 
         <Button type="submit" className="w-full" loading={submitting}>
-          Create account
+          {t('auth.createAction')}
         </Button>
       </form>
     </AuthShell>

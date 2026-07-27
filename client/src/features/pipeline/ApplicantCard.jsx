@@ -5,9 +5,11 @@ import { Badge } from '../../components/ui/Badge.jsx';
 import { initials } from '../../lib/format.js';
 import { cn } from '../../lib/cn.js';
 import { useFormat } from '../../hooks/useFormat.js';
+import { useT } from '../../i18n/index.jsx';
 
 export function ApplicantCard({ application, onOpen, dragging = false, overlay = false }) {
   const format = useFormat();
+  const t = useT();
   const withdrawn = application.status === 'withdrawn';
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -34,7 +36,9 @@ export function ApplicantCard({ application, onOpen, dragging = false, overlay =
           <button
             type="button"
             className="text-ink-300 hover:text-ink-600 -ms-1 cursor-grab touch-none rounded p-0.5 active:cursor-grabbing"
-            aria-label={`Drag ${application.candidate?.name ?? 'candidate'}`}
+            aria-label={t('pipeline.dragCandidate', {
+              name: application.candidate?.name ?? '',
+            })}
             {...listeners}
             {...attributes}
           >
@@ -66,7 +70,7 @@ export function ApplicantCard({ application, onOpen, dragging = false, overlay =
           )}
 
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
-            {withdrawn && <Badge tone="neutral">Withdrawn</Badge>}
+            {withdrawn && <Badge tone="neutral">{t('applications.withdrawn')}</Badge>}
             {application.score != null && (
               <span className="text-ink-600 inline-flex items-center gap-0.5 text-xs">
                 <Star className="size-3 fill-amber-400 text-amber-400" aria-hidden="true" />
@@ -80,13 +84,13 @@ export function ApplicantCard({ application, onOpen, dragging = false, overlay =
             ))}
             {application.notes?.length > 0 && (
               <span className="text-ink-400 text-xs">
-                {application.notes.length} note{application.notes.length === 1 ? '' : 's'}
+                {t('common.notesCount', { count: application.notes.length })}
               </span>
             )}
           </div>
 
           <p className="text-ink-400 mt-2 text-[11px]">
-            Applied {format.relative(application.createdAt)}
+            {t('applicant.appliedRelative', { when: format.relative(application.createdAt) })}
           </p>
         </button>
       </div>

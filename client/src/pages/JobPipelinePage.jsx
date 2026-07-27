@@ -10,7 +10,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { ArrowLeft, Inbox, Users } from 'lucide-react';
+import { Inbox, Users } from 'lucide-react';
 import { applicationsApi, jobsApi } from '../api/endpoints.js';
 import { errorMessage } from '../api/client.js';
 import { Container, PageHeader } from '../components/layout/AppLayout.jsx';
@@ -21,12 +21,15 @@ import { StageColumn } from '../features/pipeline/StageColumn.jsx';
 import { ApplicantCard } from '../features/pipeline/ApplicantCard.jsx';
 import { ApplicantPanel } from '../features/pipeline/ApplicantPanel.jsx';
 import { STAGE_ORDER } from '../lib/format.js';
+import { BackIcon } from '../components/ui/DirectionalIcon.jsx';
+import { useT } from '../i18n/index.jsx';
 import { useFormat } from '../hooks/useFormat.js';
 
 export function JobPipelinePage() {
   const format = useFormat();
   const { id } = useParams();
   const queryClient = useQueryClient();
+  const t = useT();
 
   const [activeId, setActiveId] = useState(null);
   const [openApplicationId, setOpenApplicationId] = useState(null);
@@ -102,7 +105,12 @@ export function JobPipelinePage() {
     const application = applications.find((item) => item._id === active.id);
     if (!application || !STAGE_ORDER.includes(stage) || application.stage === stage) return;
 
-    setAnnouncement(`${application.candidate?.name ?? 'Candidate'} moved to ${format.stage(stage)}`);
+    setAnnouncement(
+      t('pipeline.movedTo', {
+        name: application.candidate?.name ?? '',
+        stage: format.stage(stage),
+      })
+    );
     setStage.mutate({ id: application._id, stage });
   };
 
@@ -131,18 +139,20 @@ export function JobPipelinePage() {
         to="/recruiter/jobs"
         className="text-ink-500 hover:text-ink-900 inline-flex items-center gap-1.5 text-sm"
       >
-        <ArrowLeft className="size-4" aria-hidden="true" />
-        Back to your jobs
+        <BackIcon className="size-4" aria-hidden="true" />
+        {t('common.backToJobs')}
       </Link>
 
       <div className="mt-5">
         <PageHeader
-          title={job.data ? job.data.title : 'Pipeline'}
-          description={`${applications.length} applicant${applications.length === 1 ? '' : 's'} · drag a card between columns, or open one to add notes.`}
+          title={job.data ? job.data.title : t('pipeline.title')}
+          description={t('pipeline.subtitle', {
+            applicants: t('common.applicants', { count: applications.length }),
+          })}
           actions={
             job.data && (
               <Button variant="outline" to={`/jobs/${job.data.slug}`}>
-                View public post
+                {t('pipeline.viewPublicPost')}
               </Button>
             )
           }
@@ -151,7 +161,7 @@ export function JobPipelinePage() {
 
       {setStage.isError && (
         <p role="alert" className="mt-5 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-          {errorMessage(setStage.error, 'That move was rolled back.')}
+          {errorMessage(setStage.error, t('pipeline.moveRolledBack'))}
         </p>
       )}
 
@@ -164,12 +174,12 @@ export function JobPipelinePage() {
         <EmptyState
           className="mt-8"
           icon={Inbox}
-          title="No applications yet"
-          message="Share the job link — applicants will appear here and you can move them through your stages."
+          title={t('pipeline.noApplications')}
+          message={t('pipeline.noApplicationsHint')}
           action={
             job.data && (
               <Button to={`/jobs/${job.data.slug}`} variant="outline">
-                Open the public post
+                {t('pipeline.openPublicPost')}
               </Button>
             )
           }
@@ -205,7 +215,7 @@ export function JobPipelinePage() {
 
       <p className="text-ink-400 mt-4 flex items-center gap-1.5 text-xs">
         <Users className="size-3.5" aria-hidden="true" />
-        Candidates are emailed automatically when you move them to a new stage.
+        {t('pipeline.emailNotice')}
       </p>
 
       {openApplicationId && (

@@ -15,11 +15,12 @@ import { Pagination } from '../components/ui/Pagination.jsx';
 
 import { cn } from '../lib/cn.js';
 import { useFormat } from '../hooks/useFormat.js';
+import { useT } from '../i18n/index.jsx';
 
 const TABS = [
-  { value: 'users', label: 'Users' },
-  { value: 'jobs', label: 'Jobs' },
-  { value: 'companies', label: 'Companies' },
+  { value: 'users', key: 'admin.users' },
+  { value: 'jobs', key: 'admin.jobs' },
+  { value: 'companies', key: 'admin.companies' },
 ];
 
 export function AdminPage() {
@@ -28,41 +29,49 @@ export function AdminPage() {
     ? searchParams.get('tab')
     : 'users';
 
+  const t = useT();
   const overview = useQuery({ queryKey: ['admin-overview'], queryFn: adminApi.overview });
   const stats = overview.data?.stats;
 
   return (
     <Container className="py-10 sm:py-14">
       <PageHeader
-        title="Moderation"
-        description="Every account, company and job on the platform. Act carefully — people depend on these records."
+        title={t('admin.title')}
+        description={t('admin.subtitle')}
       />
 
       <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           icon={Users}
-          label="Users"
+          label={t('admin.users')}
           value={stats?.users.total}
-          hint={stats ? `${stats.users.candidates} candidates · ${stats.users.recruiters} recruiters` : null}
+          hint={
+            stats
+              ? t('admin.candidatesRecruiters', {
+                  candidates: stats.users.candidates,
+                  recruiters: stats.users.recruiters,
+                })
+              : null
+          }
           loading={overview.isPending}
         />
         <StatCard
           icon={UserX}
-          label="Deactivated"
+          label={t('admin.deactivated')}
           value={stats?.users.deactivated}
           loading={overview.isPending}
         />
         <StatCard
           icon={Building2}
-          label="Companies"
+          label={t('admin.companies')}
           value={stats?.companies}
           loading={overview.isPending}
         />
         <StatCard
           icon={ShieldAlert}
-          label="Jobs"
+          label={t('admin.jobs')}
           value={stats?.jobs.total}
-          hint={stats ? `${stats.jobs.published} published` : null}
+          hint={stats ? t('admin.publishedCount', { count: stats.jobs.published }) : null}
           loading={overview.isPending}
         />
       </div>
@@ -82,7 +91,7 @@ export function AdminPage() {
                 : 'text-ink-500 hover:text-ink-900 border-transparent'
             )}
           >
-            {item.label}
+            {t(item.key)}
           </button>
         ))}
       </div>
@@ -139,6 +148,7 @@ function SearchInput({ value, onChange, placeholder }) {
 function UsersTab() {
   const format = useFormat();
   const queryClient = useQueryClient();
+  const t = useT();
   const currentUser = useAuthStore((state) => state.user);
 
   const [filters, setFilters] = useState({ q: '', role: '', status: '' });
@@ -169,7 +179,7 @@ function UsersTab() {
     <>
       <Toolbar>
         <SearchInput
-          placeholder="Search name or email"
+          placeholder={t('admin.searchUsers')}
           value={filters.q}
           onChange={(q) => {
             setFilters((c) => ({ ...c, q }));
@@ -177,7 +187,7 @@ function UsersTab() {
           }}
         />
         <Select
-          aria-label="Role"
+          aria-label={t('admin.colRole')}
           className="w-40"
           value={filters.role}
           onChange={(e) => {
@@ -185,13 +195,13 @@ function UsersTab() {
             setPage(1);
           }}
         >
-          <option value="">All roles</option>
-          <option value="candidate">Candidates</option>
-          <option value="recruiter">Recruiters</option>
-          <option value="admin">Admins</option>
+          <option value="">{t('admin.allRoles')}</option>
+          <option value="candidate">{t('admin.roleCandidates')}</option>
+          <option value="recruiter">{t('admin.roleRecruiters')}</option>
+          <option value="admin">{t('admin.roleAdmins')}</option>
         </Select>
         <Select
-          aria-label="Status"
+          aria-label={t('admin.colStatus')}
           className="w-40"
           value={filters.status}
           onChange={(e) => {
@@ -199,9 +209,9 @@ function UsersTab() {
             setPage(1);
           }}
         >
-          <option value="">Any status</option>
-          <option value="active">Active</option>
-          <option value="inactive">Deactivated</option>
+          <option value="">{t('common.anyStatus')}</option>
+          <option value="active">{t('admin.statusActive')}</option>
+          <option value="inactive">{t('admin.statusInactive')}</option>
         </Select>
       </Toolbar>
 
@@ -214,7 +224,7 @@ function UsersTab() {
       {query.isPending && <TableSkeleton rows={6} />}
       {query.isError && <ErrorState message={errorMessage(query.error)} onRetry={query.refetch} />}
       {query.isSuccess && users.length === 0 && (
-        <EmptyState icon={Users} title="No users match those filters" />
+        <EmptyState icon={Users} title={t('admin.noUsers')} />
       )}
 
       {users.length > 0 && (
@@ -222,11 +232,11 @@ function UsersTab() {
           <table className="w-full min-w-[46rem] text-sm">
             <thead className="border-ink-200 text-ink-500 border-b text-start text-xs uppercase">
               <tr>
-                <th className="px-4 py-3 font-medium">Name</th>
-                <th className="px-4 py-3 font-medium">Role</th>
-                <th className="px-4 py-3 font-medium">Company</th>
-                <th className="px-4 py-3 font-medium">Joined</th>
-                <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium">{t('admin.colName')}</th>
+                <th className="px-4 py-3 font-medium">{t('admin.colRole')}</th>
+                <th className="px-4 py-3 font-medium">{t('admin.colCompany')}</th>
+                <th className="px-4 py-3 font-medium">{t('admin.colJoined')}</th>
+                <th className="px-4 py-3 font-medium">{t('admin.colStatus')}</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
@@ -237,7 +247,7 @@ function UsersTab() {
                     <p className="text-ink-900 font-medium">{user.name}</p>
                     <p className="text-ink-500 text-xs">{user.email}</p>
                   </td>
-                  <td className="text-ink-600 px-4 py-3 capitalize">{user.role}</td>
+                  <td className="text-ink-600 px-4 py-3">{t(`roles.${user.role}`)}</td>
                   <td className="text-ink-600 px-4 py-3">
                     {user.company ? (
                       <Link
@@ -253,9 +263,9 @@ function UsersTab() {
                   <td className="text-ink-500 px-4 py-3">{format.date(user.createdAt)}</td>
                   <td className="px-4 py-3">
                     {user.isActive ? (
-                      <Badge tone="success">Active</Badge>
+                      <Badge tone="success">{t('admin.statusActive')}</Badge>
                     ) : (
-                      <Badge tone="danger">Deactivated</Badge>
+                      <Badge tone="danger">{t('admin.statusInactive')}</Badge>
                     )}
                   </td>
                   <td className="px-4 py-3 text-end">
@@ -268,7 +278,7 @@ function UsersTab() {
                           setActive.mutate({ id: user._id, isActive: !user.isActive })
                         }
                       >
-                        {user.isActive ? 'Deactivate' : 'Reactivate'}
+                        {user.isActive ? t('admin.deactivate') : t('admin.reactivate')}
                       </Button>
                     )}
                   </td>
@@ -289,6 +299,7 @@ function UsersTab() {
 function JobsTab() {
   const format = useFormat();
   const queryClient = useQueryClient();
+  const t = useT();
   const [filters, setFilters] = useState({ q: '', status: '' });
   const [page, setPage] = useState(1);
 
@@ -318,7 +329,7 @@ function JobsTab() {
     <>
       <Toolbar>
         <SearchInput
-          placeholder="Search job titles"
+          placeholder={t('admin.searchJobs')}
           value={filters.q}
           onChange={(q) => {
             setFilters((c) => ({ ...c, q }));
@@ -326,7 +337,7 @@ function JobsTab() {
           }}
         />
         <Select
-          aria-label="Job status"
+          aria-label={t('admin.colStatus')}
           className="w-40"
           value={filters.status}
           onChange={(e) => {
@@ -334,10 +345,10 @@ function JobsTab() {
             setPage(1);
           }}
         >
-          <option value="">Any status</option>
-          <option value="published">Published</option>
-          <option value="draft">Draft</option>
-          <option value="closed">Closed</option>
+          <option value="">{t('common.anyStatus')}</option>
+          <option value="published">{t('jobStatus.published')}</option>
+          <option value="draft">{t('jobStatus.draft')}</option>
+          <option value="closed">{t('jobStatus.closed')}</option>
         </Select>
       </Toolbar>
 
@@ -350,7 +361,7 @@ function JobsTab() {
       {query.isPending && <ListRowsSkeleton count={4} />}
       {query.isError && <ErrorState message={errorMessage(query.error)} onRetry={query.refetch} />}
       {query.isSuccess && jobs.length === 0 && (
-        <EmptyState icon={ShieldAlert} title="No jobs match those filters" />
+        <EmptyState icon={ShieldAlert} title={t('admin.noJobs')} />
       )}
 
       <div className="space-y-3">
@@ -370,17 +381,20 @@ function JobsTab() {
                     </Link>
                   )}
                 </h3>
-                <Badge tone={JOB_STATUS_TONES[job.status]} className="capitalize">
-                  {job.status}
-                </Badge>
+                <Badge tone={JOB_STATUS_TONES[job.status]}>{format.jobStatus(job.status)}</Badge>
               </div>
               <p className="text-ink-500 mt-1 text-xs">
-                {job.company?.name} · posted by {job.createdBy?.name} ·{' '}
-                {format.date(job.createdAt)}
+                {t('admin.postedBy', {
+                  company: job.company?.name ?? '',
+                  author: job.createdBy?.name ?? '',
+                  date: format.date(job.createdAt),
+                })}
               </p>
               <p className="text-ink-500 mt-1 text-xs">
-                {job.applicationCount} applicant{job.applicationCount === 1 ? '' : 's'} ·{' '}
-                {job.views} views
+                {t('admin.jobMeta', {
+                  applicants: t('common.applicants', { count: job.applicationCount }),
+                  views: t('common.views', { count: job.views }),
+                })}
               </p>
             </div>
 
@@ -392,7 +406,7 @@ function JobsTab() {
                   loading={takeDown.isPending && takeDown.variables === job._id}
                   onClick={() => takeDown.mutate(job._id)}
                 >
-                  Take down
+                  {t('admin.takeDown')}
                 </Button>
               )}
               {job.applicationCount === 0 && (
@@ -403,7 +417,7 @@ function JobsTab() {
                   onClick={() => remove.mutate(job._id)}
                 >
                   <Trash2 className="size-4" aria-hidden="true" />
-                  Delete
+                  {t('admin.delete')}
                 </Button>
               )}
             </div>
@@ -420,6 +434,7 @@ function JobsTab() {
 
 function CompaniesTab() {
   const format = useFormat();
+  const t = useT();
   const [page, setPage] = useState(1);
 
   const query = useQuery({
@@ -435,7 +450,7 @@ function CompaniesTab() {
       {query.isPending && <ListRowsSkeleton count={4} />}
       {query.isError && <ErrorState message={errorMessage(query.error)} onRetry={query.refetch} />}
       {query.isSuccess && companies.length === 0 && (
-        <EmptyState icon={Building2} title="No companies yet" />
+        <EmptyState icon={Building2} title={t('admin.noCompanies')} />
       )}
 
       <div className="grid gap-3 sm:grid-cols-2">
@@ -447,11 +462,17 @@ function CompaniesTab() {
               </Link>
             </h3>
             <p className="text-ink-500 mt-1 text-xs">
-              {[company.industry, company.location, company.size && `${company.size} people`]
+              {[
+                company.industry,
+                company.location,
+                company.size && t('common.people', { size: company.size }),
+              ]
                 .filter(Boolean)
-                .join(' · ') || 'No profile details yet'}
+                .join(' · ') || t('admin.noProfileDetails')}
             </p>
-            <p className="text-ink-400 mt-1 text-xs">Created {format.date(company.createdAt)}</p>
+            <p className="text-ink-400 mt-1 text-xs">
+              {t('admin.createdRelative', { date: format.date(company.createdAt) })}
+            </p>
           </article>
         ))}
       </div>

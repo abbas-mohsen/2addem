@@ -12,12 +12,14 @@ import { ListRowsSkeleton } from '../components/ui/Skeletons.jsx';
 import { Pagination } from '../components/ui/Pagination.jsx';
 import { initials } from '../lib/format.js';
 import { useFormat } from '../hooks/useFormat.js';
+import { useT } from '../i18n/index.jsx';
 
 export function TalentPoolPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [activeTag, setActiveTag] = useState('');
   const [page, setPage] = useState(1);
+  const t = useT();
 
   const query = useQuery({
     queryKey: ['talent-pool', search, activeTag, page],
@@ -45,8 +47,8 @@ export function TalentPoolPage() {
   return (
     <Container className="py-10 sm:py-14">
       <PageHeader
-        title="Talent pool"
-        description="People worth remembering after a role closes. Saved from your pipeline, kept for the next opening."
+        title={t('talent.title')}
+        description={t('talent.subtitle')}
       />
 
       <div className="mt-6 flex flex-wrap gap-3">
@@ -58,8 +60,8 @@ export function TalentPoolPage() {
           <Input
             type="search"
             className="ps-9"
-            placeholder="Search name, headline or note"
-            aria-label="Search the talent pool"
+            placeholder={t('talent.searchPlaceholder')}
+            aria-label={t('talent.searchLabel')}
             value={search}
             onChange={(event) => {
               setSearch(event.target.value);
@@ -71,7 +73,7 @@ export function TalentPoolPage() {
 
       {allTags.length > 0 && (
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <span className="text-ink-500 text-xs">Tags:</span>
+          <span className="text-ink-500 text-xs">{t('talent.tags')}</span>
           {allTags.map((tag) => (
             <button
               key={tag}
@@ -109,14 +111,14 @@ export function TalentPoolPage() {
         {query.isSuccess && entries.length === 0 && (
           <EmptyState
             icon={Users}
-            title={search || activeTag ? 'Nobody matches that' : 'Your talent pool is empty'}
+            title={search || activeTag ? t('talent.noMatch') : t('talent.empty')}
             message={
               search || activeTag
-                ? 'Try a different search, or clear the tag filter.'
-                : 'Open any applicant in a pipeline and choose "Save to pool" to keep them here.'
+                ? t('talent.noMatchHint')
+                : t('talent.emptyHint')
             }
             action={
-              !search && !activeTag && <Button to="/recruiter/jobs">Go to your jobs</Button>
+              !search && !activeTag && <Button to="/recruiter/jobs">{t('talent.goToJobs')}</Button>
             }
           />
         )}
@@ -140,6 +142,7 @@ export function TalentPoolPage() {
 
 function PoolCard({ entry, onRemove, onSaveNote, removing, savingNote }) {
   const format = useFormat();
+  const t = useT();
   const [note, setNote] = useState(entry.note ?? '');
   const [editing, setEditing] = useState(false);
   const candidate = entry.candidate;
@@ -203,12 +206,16 @@ function PoolCard({ entry, onRemove, onSaveNote, removing, savingNote }) {
 
         <div className="flex flex-col items-end gap-2">
           <span className="text-ink-400 text-xs">
-            Saved {format.relative(entry.createdAt)}
-            {entry.savedBy?.name ? ` by ${entry.savedBy.name}` : ''}
+            {entry.savedBy?.name
+              ? t('talent.savedBy', {
+                  when: format.relative(entry.createdAt),
+                  name: entry.savedBy.name,
+                })
+              : t('talent.savedRelative', { when: format.relative(entry.createdAt) })}
           </span>
           <Button variant="ghost" size="sm" loading={removing} onClick={onRemove}>
             <BookmarkX className="size-4" aria-hidden="true" />
-            Remove
+            {t('common.remove')}
           </Button>
         </div>
       </div>
@@ -219,8 +226,8 @@ function PoolCard({ entry, onRemove, onSaveNote, removing, savingNote }) {
             <Textarea
               rows={2}
               className="text-sm"
-              aria-label="Note about this candidate"
-              placeholder="Why are you keeping this person warm?"
+              aria-label={t('talent.noteLabel')}
+              placeholder={t('talent.notePlaceholder')}
               value={note}
               onChange={(event) => setNote(event.target.value)}
             />
@@ -233,7 +240,7 @@ function PoolCard({ entry, onRemove, onSaveNote, removing, savingNote }) {
                   setEditing(false);
                 }}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button
                 size="sm"
@@ -243,7 +250,7 @@ function PoolCard({ entry, onRemove, onSaveNote, removing, savingNote }) {
                   setEditing(false);
                 }}
               >
-                Save note
+                {t('talent.saveNote')}
               </Button>
             </div>
           </div>
@@ -253,7 +260,7 @@ function PoolCard({ entry, onRemove, onSaveNote, removing, savingNote }) {
             onClick={() => setEditing(true)}
             className="text-ink-600 hover:text-ink-900 w-full text-start text-sm"
           >
-            {entry.note || <span className="text-ink-400">Add a note…</span>}
+            {entry.note || <span className="text-ink-400">{t('talent.addNote')}</span>}
           </button>
         )}
       </div>

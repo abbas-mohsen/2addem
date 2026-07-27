@@ -9,6 +9,7 @@ import { EmptyState, ErrorState } from '../components/ui/States.jsx';
 import { Pagination } from '../components/ui/Pagination.jsx';
 import { JobCard, JobCardSkeleton } from '../features/jobs/JobCard.jsx';
 import { JobFilters } from '../features/jobs/JobFilters.jsx';
+import { useT } from '../i18n/index.jsx';
 
 const EMPTY_FILTERS = {
   q: '',
@@ -34,6 +35,7 @@ export function JobBoardPage() {
   const page = Number(searchParams.get('page') ?? 1);
 
   const [draft, setDraft] = useState(filters);
+  const t = useT();
 
   const activeCount = useMemo(
     () =>
@@ -63,10 +65,7 @@ export function JobBoardPage() {
 
   return (
     <Container className="py-10 sm:py-14">
-      <PageHeader
-        title="Open roles"
-        description="Every published role on 2addem. Filter it down to the ones worth your time."
-      />
+      <PageHeader title={t('jobs.openRoles')} description={t('jobs.boardSubtitle')} />
 
       <div className="mt-6">
         <JobFilters
@@ -92,7 +91,7 @@ export function JobBoardPage() {
 
         {query.isError && (
           <ErrorState
-            title="We could not load the job board"
+            title={t('jobs.couldNotLoadBoard')}
             message={errorMessage(query.error)}
             onRetry={query.refetch}
           />
@@ -101,8 +100,8 @@ export function JobBoardPage() {
         {query.isSuccess && jobs.length === 0 && (
           <EmptyState
             icon={SearchX}
-            title="No roles match those filters"
-            message="Try a broader keyword, or clear the filters to see everything that is open."
+            title={t('jobs.noMatches')}
+            message={t('jobs.noMatchesHint')}
           />
         )}
 

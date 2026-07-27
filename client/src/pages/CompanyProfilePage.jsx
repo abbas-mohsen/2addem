@@ -10,8 +10,8 @@ import { Field, Input, Select, Textarea } from '../components/ui/Field.jsx';
 import { CompanyLogo } from '../components/ui/Logo.jsx';
 import { ErrorState } from '../components/ui/States.jsx';
 import { FormSkeleton, PageHeaderSkeleton } from '../components/ui/Skeletons.jsx';
-
-const SIZES = ['1-10', '11-50', '51-200', '201-500', '501-1000', '1000+'];
+import { COMPANY_SIZES } from '../lib/format.js';
+import { useT } from '../i18n/index.jsx';
 
 export function CompanyProfilePage() {
   const query = useQuery({ queryKey: ['my-company'], queryFn: companiesApi.mine });
@@ -42,6 +42,7 @@ export function CompanyProfilePage() {
 
 function CompanyForm({ company }) {
   const queryClient = useQueryClient();
+  const t = useT();
 
   const [form, setForm] = useState({
     name: company?.name ?? '',
@@ -65,7 +66,7 @@ function CompanyForm({ company }) {
     },
     onError: (error) => {
       setErrors(fieldErrors(error));
-      setSubmitError(errorMessage(error, 'Could not save your company profile.'));
+      setSubmitError(errorMessage(error, t('company.saveFailed')));
     },
   });
 
@@ -89,9 +90,9 @@ function CompanyForm({ company }) {
     setSubmitError(null);
 
     const next = {};
-    if (form.name.trim().length < 2) next.name = 'Company name is required';
-    if (form.website && !isUrl(form.website)) next.website = 'Enter a full URL, including https://';
-    if (form.logoUrl && !isUrl(form.logoUrl)) next.logoUrl = 'Enter a full URL, including https://';
+    if (form.name.trim().length < 2) next.name = t('company.nameError');
+    if (form.website && !isUrl(form.website)) next.website = t('company.urlError');
+    if (form.logoUrl && !isUrl(form.logoUrl)) next.logoUrl = t('company.urlError');
 
     setErrors(next);
     if (Object.keys(next).length > 0) return;
@@ -111,12 +112,12 @@ function CompanyForm({ company }) {
     <Container className="py-10 sm:py-14">
       <div className="mx-auto max-w-3xl">
         <PageHeader
-          title="Company profile"
-          description="This is what candidates see on your public career page and next to every job."
+          title={t('company.profileTitle')}
+          description={t('company.profileSubtitle')}
           actions={
             company?.slug && (
               <Button variant="outline" as="a" href={`/companies/${company.slug}`} target="_blank">
-                View career page
+                {t('company.viewCareerPage')}
                 <ExternalLink className="size-4" aria-hidden="true" />
               </Button>
             )
@@ -136,14 +137,14 @@ function CompanyForm({ company }) {
           {saved && !save.isPending && (
             <p className="flex items-center gap-2 rounded-lg bg-emerald-50 px-3.5 py-3 text-sm text-emerald-800">
               <Check className="size-4" aria-hidden="true" />
-              Saved. Your career page is up to date.
+              {t('company.saved')}
             </p>
           )}
 
           <div className="flex items-center gap-4">
             <CompanyLogo company={{ ...company, ...form }} size="lg" />
             <div className="flex-1">
-              <Field label="Logo URL" error={errors.logoUrl} hint="Square images work best.">
+              <Field label={t('company.logoUrl')} error={errors.logoUrl} hint={t('company.logoHint')}>
                 {(props) => (
                   <Input
                     {...props}
@@ -157,22 +158,22 @@ function CompanyForm({ company }) {
             </div>
           </div>
 
-          <Field label="Company name" error={errors.name} required>
+          <Field label={t('company.name')} error={errors.name} required>
             {(props) => (
               <Input {...props} value={form.name} error={errors.name} onChange={update('name')} />
             )}
           </Field>
 
           <Field
-            label="About the company"
-            hint="Two or three honest paragraphs beat a mission statement."
+            label={t('company.about')}
+            hint={t('company.aboutHint')}
           >
             {(props) => (
               <Textarea
                 {...props}
                 rows={7}
                 maxLength={6000}
-                placeholder="What you build, who you build it for, and what it is like to work there."
+                placeholder={t('company.aboutPlaceholder')}
                 value={form.description}
                 onChange={update('description')}
               />
@@ -180,7 +181,7 @@ function CompanyForm({ company }) {
           </Field>
 
           <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="Website" error={errors.website}>
+            <Field label={t('company.website')} error={errors.website}>
               {(props) => (
                 <Input
                   {...props}
@@ -192,7 +193,7 @@ function CompanyForm({ company }) {
               )}
             </Field>
 
-            <Field label="Headquarters">
+            <Field label={t('company.headquarters')}>
               {(props) => (
                 <Input
                   {...props}
@@ -203,7 +204,7 @@ function CompanyForm({ company }) {
               )}
             </Field>
 
-            <Field label="Industry">
+            <Field label={t('company.industry')}>
               {(props) => (
                 <Input
                   {...props}
@@ -214,12 +215,12 @@ function CompanyForm({ company }) {
               )}
             </Field>
 
-            <Field label="Company size">
+            <Field label={t('company.size')}>
               {(props) => (
                 <Select {...props} value={form.size} onChange={update('size')}>
-                  {SIZES.map((size) => (
+                  {COMPANY_SIZES.map((size) => (
                     <option key={size} value={size}>
-                      {size} people
+                      {t('common.people', { size })}
                     </option>
                   ))}
                 </Select>
@@ -229,17 +230,17 @@ function CompanyForm({ company }) {
 
           <div className="border-ink-200 flex flex-col-reverse gap-3 border-t pt-5 sm:flex-row sm:justify-end">
             <Button type="button" variant="outline" to="/recruiter">
-              Back to dashboard
+              {t('company.backToDashboard')}
             </Button>
             <Button type="submit" loading={save.isPending}>
-              Save changes
+              {t('common.saveChanges')}
             </Button>
           </div>
         </form>
 
         {company?.slug && (
           <p className="text-ink-500 mt-4 text-sm">
-            Public career page:{' '}
+            {t('company.publicPage')}{' '}
             <Link to={`/companies/${company.slug}`} className="text-brand-700 hover:underline">
               /companies/{company.slug}
             </Link>

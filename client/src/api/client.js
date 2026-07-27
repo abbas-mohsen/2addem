@@ -70,12 +70,27 @@ api.interceptors.response.use(
 
 export { refreshSession };
 
+/* This module cannot use hooks, so the i18n provider pushes the translated
+   fallbacks in whenever the locale changes. */
+let fallbacks = {
+  generic: 'Something went wrong. Please try again.',
+  network: 'Cannot reach the server.',
+};
+
+export function setErrorFallbacks(next) {
+  fallbacks = next;
+}
+
 /* Server errors always arrive as { error: { message, details } }; components
    should never have to dig through the axios shape. */
-export function errorMessage(error, fallback = 'Something went wrong. Please try again.') {
+export function errorMessage(error, fallback) {
   const payload = error?.response?.data?.error;
   if (payload?.details?.length) return payload.details[0].message;
-  return payload?.message ?? (error?.message === 'Network Error' ? 'Cannot reach the server.' : fallback);
+
+  if (payload?.message) return payload.message;
+  if (error?.message === 'Network Error') return fallbacks.network;
+
+  return fallback ?? fallbacks.generic;
 }
 
 export function fieldErrors(error) {

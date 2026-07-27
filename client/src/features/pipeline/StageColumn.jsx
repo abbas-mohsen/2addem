@@ -3,6 +3,7 @@ import { ApplicantCard } from './ApplicantCard.jsx';
 
 import { cn } from '../../lib/cn.js';
 import { useFormat } from '../../hooks/useFormat.js';
+import { useT } from '../../i18n/index.jsx';
 
 const STAGE_ACCENTS = {
   applied: 'bg-ink-300',
@@ -15,12 +16,16 @@ const STAGE_ACCENTS = {
 
 export function StageColumn({ stage, applications, onOpen, activeId }) {
   const format = useFormat();
+  const t = useT();
   const { setNodeRef, isOver } = useDroppable({ id: stage });
 
   return (
     <section
       ref={setNodeRef}
-      aria-label={`${format.stage(stage)} — ${applications.length} candidates`}
+      aria-label={t('pipeline.columnLabel', {
+        stage: format.stage(stage),
+        count: applications.length,
+      })}
       className={cn(
         'flex w-72 shrink-0 flex-col rounded-xl border p-2.5 transition-colors',
         isOver ? 'border-brand-300 bg-brand-50/70' : 'border-ink-200 bg-ink-50/60'
@@ -42,7 +47,7 @@ export function StageColumn({ stage, applications, onOpen, activeId }) {
               isOver ? 'border-brand-300' : 'border-ink-200'
             )}
           >
-            {isOver ? 'Drop here' : 'Nobody here yet'}
+            {isOver ? t('pipeline.dropHere') : t('pipeline.nobodyHere')}
           </p>
         ) : (
           applications.map((application) => (

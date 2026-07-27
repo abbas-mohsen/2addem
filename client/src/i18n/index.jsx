@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { en } from './en.js';
 import { ar } from './ar.js';
+import { setErrorFallbacks } from '../api/client.js';
 
 /* A deliberately small i18n layer rather than react-i18next: the app needs
    lookup, interpolation and plurals, and Intl.PluralRules already handles the
@@ -83,6 +84,9 @@ export function I18nProvider({ children }) {
 
       return interpolate(entry, vars);
     };
+
+    // The axios layer has no hooks, so hand it the translated fallbacks.
+    setErrorFallbacks({ generic: t('errors.generic'), network: t('errors.network') });
 
     return { locale, setLocale, dir, isRtl: dir === 'rtl', t };
   }, [locale, dir, setLocale]);

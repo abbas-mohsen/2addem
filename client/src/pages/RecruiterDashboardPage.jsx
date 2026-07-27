@@ -10,6 +10,7 @@ import { EmptyState, ErrorState, Skeleton } from '../components/ui/States.jsx';
 import { STAGE_ORDER } from '../lib/format.js';
 import { cn } from '../lib/cn.js';
 import { useFormat } from '../hooks/useFormat.js';
+import { useT } from '../i18n/index.jsx';
 
 const STAGE_BARS = {
   applied: 'bg-ink-300',
@@ -23,6 +24,7 @@ const STAGE_BARS = {
 export function RecruiterDashboardPage() {
   const format = useFormat();
   const user = useAuthStore((state) => state.user);
+  const t = useT();
 
   const query = useQuery({
     queryKey: ['company-stats'],
@@ -34,16 +36,18 @@ export function RecruiterDashboardPage() {
   return (
     <Container className="py-10 sm:py-14">
       <PageHeader
-        title={`Hiring at ${user?.company?.name ?? 'your company'}`}
-        description="How your open roles are performing and where your candidates are sitting."
+        title={t('recruiter.dashboardTitle', {
+          company: user?.company?.name ?? t('recruiter.yourCompany'),
+        })}
+        description={t('recruiter.dashboardSubtitle')}
         actions={
           <>
             <Button variant="outline" to="/recruiter/company">
-              Company profile
+              {t('recruiter.companyProfile')}
             </Button>
             <Button to="/recruiter/jobs/new">
               <Plus className="size-4" aria-hidden="true" />
-              New job
+              {t('recruiter.newJob')}
             </Button>
           </>
         }
@@ -60,37 +64,41 @@ export function RecruiterDashboardPage() {
       <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           icon={Briefcase}
-          label="Published jobs"
+          label={t('recruiter.publishedJobs')}
           value={stats?.jobs.published}
-          hint={stats ? `${stats.jobs.draft} draft · ${stats.jobs.closed} closed` : null}
+          hint={
+            stats
+              ? t('recruiter.draftClosed', { draft: stats.jobs.draft, closed: stats.jobs.closed })
+              : null
+          }
           loading={query.isPending}
         />
         <StatCard
           icon={Users}
-          label="Applicants"
+          label={t('recruiter.applicantsStat')}
           value={stats?.applications.total}
-          hint={stats ? `${stats.applications.last7Days} in the last 7 days` : null}
+          hint={stats ? t('recruiter.lastSevenDays', { count: stats.applications.last7Days }) : null}
           loading={query.isPending}
         />
         <StatCard
           icon={Eye}
-          label="Job views"
+          label={t('recruiter.jobViews')}
           value={stats?.views}
           loading={query.isPending}
         />
         <StatCard
           icon={TrendingUp}
-          label="View to apply"
+          label={t('recruiter.viewToApply')}
           value={stats ? `${Math.round(stats.conversionRate * 100)}%` : undefined}
-          hint="Applications per job view"
+          hint={t('recruiter.viewToApplyHint')}
           loading={query.isPending}
         />
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_1fr]">
         <section className="border-ink-200 rounded-card shadow-card border bg-white p-5">
-          <h2 className="text-base font-semibold">Candidates by stage</h2>
-          <p className="text-ink-500 mt-0.5 text-sm">Active applications across every open role.</p>
+          <h2 className="text-base font-semibold">{t('recruiter.byStage')}</h2>
+          <p className="text-ink-500 mt-0.5 text-sm">{t('recruiter.byStageHint')}</p>
 
           {query.isPending ? (
             <div className="mt-5 space-y-3">
@@ -100,7 +108,7 @@ export function RecruiterDashboardPage() {
             </div>
           ) : stats?.applications.active === 0 ? (
             <p className="text-ink-400 mt-6 text-sm">
-              No active candidates yet. They will show up here as people apply.
+              {t('recruiter.noActiveCandidates')}
             </p>
           ) : (
             <ul className="mt-5 space-y-3">
@@ -130,9 +138,9 @@ export function RecruiterDashboardPage() {
 
         <section className="border-ink-200 rounded-card shadow-card border bg-white p-5">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-base font-semibold">Busiest roles</h2>
+            <h2 className="text-base font-semibold">{t('recruiter.busiestRoles')}</h2>
             <Link to="/recruiter/jobs" className="text-brand-700 text-sm font-medium hover:underline">
-              All jobs
+              {t('recruiter.allJobs')}
             </Link>
           </div>
 
@@ -153,13 +161,12 @@ export function RecruiterDashboardPage() {
                     >
                       {job.title}
                     </Link>
-                    <p className="text-ink-500 mt-0.5 text-xs">{job.views} views</p>
+                    <p className="text-ink-500 mt-0.5 text-xs">
+                      {t('common.views', { count: job.views })}
+                    </p>
                   </div>
                   <span className="text-ink-900 shrink-0 text-sm font-semibold tabular-nums">
-                    {job.applicationCount}
-                    <span className="text-ink-400 ms-1 font-normal">
-                      applicant{job.applicationCount === 1 ? '' : 's'}
-                    </span>
+                    {t('common.applicants', { count: job.applicationCount })}
                   </span>
                 </li>
               ))}
@@ -168,9 +175,13 @@ export function RecruiterDashboardPage() {
             <EmptyState
               className="mt-4 border-0 py-8"
               icon={Briefcase}
-              title="Nothing published yet"
-              message="Publish a role and it will start collecting applicants."
-              action={<Button size="sm" to="/recruiter/jobs/new">Create a job</Button>}
+              title={t('recruiter.nothingPublished')}
+              message={t('recruiter.nothingPublishedHint')}
+              action={
+                <Button size="sm" to="/recruiter/jobs/new">
+                  {t('recruiter.createJob')}
+                </Button>
+              }
             />
           )}
         </section>

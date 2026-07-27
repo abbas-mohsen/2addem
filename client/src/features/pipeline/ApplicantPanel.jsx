@@ -11,12 +11,14 @@ import { Skeleton, SkeletonGroup } from '../../components/ui/States.jsx';
 import { STAGE_ORDER, initials } from '../../lib/format.js';
 import { cn } from '../../lib/cn.js';
 import { useFormat } from '../../hooks/useFormat.js';
+import { useT } from '../../i18n/index.jsx';
 
 export function ApplicantPanel({ applicationId, jobId, onClose }) {
   const format = useFormat();
   const queryClient = useQueryClient();
   const [noteBody, setNoteBody] = useState('');
   const [tagDraft, setTagDraft] = useState('');
+  const t = useT();
 
   const query = useQuery({
     queryKey: ['application', applicationId],
@@ -68,7 +70,7 @@ export function ApplicantPanel({ applicationId, jobId, onClose }) {
       <aside
         role="dialog"
         aria-modal="true"
-        aria-label="Applicant details"
+        aria-label={t('applicant.title')}
         className="border-ink-200 fixed inset-y-0 end-0 z-50 flex w-full max-w-md flex-col border-s bg-white shadow-2xl"
       >
         <header className="border-ink-200 flex items-start gap-3 border-b p-5">
@@ -90,18 +92,18 @@ export function ApplicantPanel({ applicationId, jobId, onClose }) {
                   </p>
                 )}
                 <p className="text-ink-400 mt-1 text-xs">
-                  Applied {format.relative(application.createdAt)}
+                  {t('applicant.appliedRelative', { when: format.relative(application.createdAt) })}
                 </p>
               </div>
             </>
           ) : (
-            <h2 className="flex-1 text-base font-semibold">Applicant</h2>
+            <h2 className="flex-1 text-base font-semibold">{t('applicant.title')}</h2>
           )}
 
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t('common.close')}
             className="text-ink-400 hover:bg-ink-100 hover:text-ink-800 rounded-lg p-1.5"
           >
             <X className="size-4" />
@@ -139,20 +141,20 @@ export function ApplicantPanel({ applicationId, jobId, onClose }) {
             <div className="space-y-6 p-5">
               {mutationError && (
                 <p role="alert" className="rounded-lg bg-red-50 px-3.5 py-3 text-sm text-red-700">
-                  {errorMessage(mutationError.error, 'That change did not save.')}
+                  {errorMessage(mutationError.error, t('applicant.changeFailed'))}
                 </p>
               )}
 
               <div className="flex flex-wrap items-center gap-2.5">
                 {withdrawn ? (
-                  <Badge tone="neutral">Withdrawn by candidate</Badge>
+                  <Badge tone="neutral">{t('applicant.withdrawnByCandidate')}</Badge>
                 ) : (
                   <>
                     <Badge tone={STAGE_TONES[application.stage]}>
                       {format.stage(application.stage)}
                     </Badge>
                     <Select
-                      aria-label="Move to stage"
+                      aria-label={t('applicant.moveToStage')}
                       className="h-9 w-40 py-0 text-sm"
                       value={application.stage}
                       disabled={setStage.isPending}
@@ -225,19 +227,19 @@ export function ApplicantPanel({ applicationId, jobId, onClose }) {
                     {inPool ? (
                       <>
                         <Check className="size-4" aria-hidden="true" />
-                        In talent pool
+                        {t('applicant.inPool')}
                       </>
                     ) : (
                       <>
                         <BookmarkPlus className="size-4" aria-hidden="true" />
-                        Save to pool
+                        {t('applicant.saveToPool')}
                       </>
                     )}
                   </Button>
                 </div>
               </div>
 
-              <Section title="Rating">
+              <Section title={t('applicant.rating')}>
                 <ScorePicker
                   value={application.score}
                   disabled={setScore.isPending}
@@ -245,7 +247,7 @@ export function ApplicantPanel({ applicationId, jobId, onClose }) {
                 />
               </Section>
 
-              <Section title="Tags">
+              <Section title={t('applicant.tags')}>
                 <div className="flex flex-wrap gap-1.5">
                   {application.tags?.length ? (
                     application.tags.map((tag) => (
@@ -259,14 +261,14 @@ export function ApplicantPanel({ applicationId, jobId, onClose }) {
                           })
                         }
                         className="bg-ink-100 text-ink-700 hover:bg-red-50 hover:text-red-700 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium"
-                        aria-label={`Remove tag ${tag}`}
+                        aria-label={t('applicant.removeTag', { tag })}
                       >
                         {tag}
                         <X className="size-3" aria-hidden="true" />
                       </button>
                     ))
                   ) : (
-                    <p className="text-ink-400 text-sm">No tags yet.</p>
+                    <p className="text-ink-400 text-sm">{t('applicant.noTags')}</p>
                   )}
                 </div>
 
@@ -282,14 +284,14 @@ export function ApplicantPanel({ applicationId, jobId, onClose }) {
                 >
                   <Input
                     className="h-9 py-0 text-sm"
-                    placeholder="Add a tag…"
-                    aria-label="Add a tag"
+                    placeholder={t('applicant.addTag')}
+                    aria-label={t('applicant.addTagLabel')}
                     maxLength={30}
                     value={tagDraft}
                     onChange={(event) => setTagDraft(event.target.value)}
                   />
                   <Button type="submit" variant="outline" size="sm" loading={setTags.isPending}>
-                    Add
+                    {t('common.add')}
                   </Button>
                 </form>
               </Section>
@@ -297,13 +299,13 @@ export function ApplicantPanel({ applicationId, jobId, onClose }) {
               <InterviewSection applicationId={application._id} disabled={withdrawn} />
 
               {application.coverLetter && (
-                <Section title="Cover note">
+                <Section title={t('applicant.coverNote')}>
                   <p className="prose-plain text-sm">{application.coverLetter}</p>
                 </Section>
               )}
 
               {application.answers?.length > 0 && (
-                <Section title="Answers">
+                <Section title={t('applicant.answers')}>
                   <dl className="space-y-3">
                     {application.answers.map((answer) => (
                       <div key={answer.question}>
@@ -315,7 +317,7 @@ export function ApplicantPanel({ applicationId, jobId, onClose }) {
                 </Section>
               )}
 
-              <Section title={`Notes (${application.notes?.length ?? 0})`}>
+              <Section title={t('applicant.notesCount', { count: application.notes?.length ?? 0 })}>
                 <div className="space-y-3">
                   {application.notes?.map((note) => (
                     <div key={note._id} className="bg-ink-50 rounded-lg p-3">
@@ -327,7 +329,7 @@ export function ApplicantPanel({ applicationId, jobId, onClose }) {
                   ))}
                   {!application.notes?.length && (
                     <p className="text-ink-400 text-sm">
-                      No notes yet. Notes are private to your team.
+                      {t('applicant.noNotes')}
                     </p>
                   )}
                 </div>
@@ -343,8 +345,8 @@ export function ApplicantPanel({ applicationId, jobId, onClose }) {
                   <Textarea
                     rows={3}
                     className="text-sm"
-                    placeholder="Add a note for your team…"
-                    aria-label="Add a note"
+                    placeholder={t('applicant.addNote')}
+                    aria-label={t('applicant.addNoteLabel')}
                     maxLength={4000}
                     value={noteBody}
                     onChange={(event) => setNoteBody(event.target.value)}
@@ -355,7 +357,7 @@ export function ApplicantPanel({ applicationId, jobId, onClose }) {
                     loading={addNote.isPending}
                     disabled={!noteBody.trim()}
                   >
-                    Add note
+                    {t('applicant.addNoteAction')}
                   </Button>
                 </form>
               </Section>
@@ -377,6 +379,8 @@ function Section({ title, children }) {
 }
 
 function ScorePicker({ value, onChange, disabled }) {
+  const t = useT();
+
   return (
     <div className="flex items-center gap-1">
       {[1, 2, 3, 4, 5].map((score) => (
@@ -386,7 +390,7 @@ function ScorePicker({ value, onChange, disabled }) {
           disabled={disabled}
           // Clicking the current score clears it, so a rating is never a one-way door.
           onClick={() => onChange(value === score ? null : score)}
-          aria-label={`${score} out of 5`}
+          aria-label={t('applicant.scoreOutOf', { score })}
           aria-pressed={value === score}
           className="rounded p-0.5 disabled:opacity-50"
         >
@@ -407,7 +411,7 @@ function ScorePicker({ value, onChange, disabled }) {
           disabled={disabled}
           className="text-ink-400 hover:text-ink-700 ms-2 text-xs"
         >
-          Clear
+          {t('common.clear')}
         </button>
       )}
     </div>

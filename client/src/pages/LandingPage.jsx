@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowRight, KanbanSquare, Search, Sparkles, Users } from 'lucide-react';
+import { KanbanSquare, Search, Sparkles, Users } from 'lucide-react';
 import { jobsApi } from '../api/endpoints.js';
 import { errorMessage } from '../api/client.js';
 import { Container } from '../components/layout/AppLayout.jsx';
@@ -9,28 +9,19 @@ import { ErrorState } from '../components/ui/States.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { Input } from '../components/ui/Field.jsx';
 import { JobCard, JobCardSkeleton } from '../features/jobs/JobCard.jsx';
+import { ForwardIcon } from '../components/ui/DirectionalIcon.jsx';
+import { useT } from '../i18n/index.jsx';
 
 const FEATURES = [
-  {
-    icon: Sparkles,
-    title: 'Job posts that read like people wrote them',
-    body: 'A structured editor for responsibilities, requirements and salary — published in a couple of minutes.',
-  },
-  {
-    icon: KanbanSquare,
-    title: 'One pipeline, no spreadsheets',
-    body: 'Every applicant lands in a stage you can move, annotate and score as a team.',
-  },
-  {
-    icon: Users,
-    title: 'Candidates always know where they stand',
-    body: 'Applicants track their own status instead of emailing to ask.',
-  },
+  { icon: Sparkles, key: 'posts' },
+  { icon: KanbanSquare, key: 'pipeline' },
+  { icon: Users, key: 'candidates' },
 ];
 
 export function LandingPage() {
   const navigate = useNavigate();
   const [term, setTerm] = useState('');
+  const t = useT();
 
   const latest = useQuery({
     queryKey: ['jobs', 'latest'],
@@ -52,18 +43,15 @@ export function LandingPage() {
           <div className="max-w-2xl">
             <span className="border-ink-200 text-ink-600 inline-flex items-center gap-2 rounded-full border bg-white px-3 py-1 text-xs font-medium">
               <span className="bg-brand-500 size-1.5 rounded-full" aria-hidden="true" />
-              Hiring, minus the admin
+              {t('landing.badge')}
             </span>
 
             <h1 className="text-title sm:text-display mt-5">
-              Jobs worth applying for.
-              <span className="text-brand-600"> Hiring worth doing.</span>
+              {t('landing.headline')}
+              <span className="text-brand-600"> {t('landing.headlineAccent')}</span>
             </h1>
 
-            <p className="text-ink-600 mt-5 text-lg leading-relaxed">
-              2addem is a two-sided hiring platform: candidates apply in one click and follow every
-              step, teams publish roles and run the whole pipeline in one place.
-            </p>
+            <p className="text-ink-600 mt-5 text-lg leading-relaxed">{t('landing.intro')}</p>
 
             <form
               onSubmit={(event) => {
@@ -80,24 +68,24 @@ export function LandingPage() {
                 <Input
                   type="search"
                   className="h-12 ps-10"
-                  placeholder="Try “React”, “product designer”, “Beirut”…"
-                  aria-label="Search jobs"
+                  placeholder={t('landing.searchPlaceholder')}
+                  aria-label={t('landing.searchJobs')}
                   value={term}
                   onChange={(event) => setTerm(event.target.value)}
                 />
               </div>
               <Button type="submit" size="lg">
-                Search jobs
+                {t('landing.searchJobs')}
               </Button>
             </form>
 
             <p className="text-ink-500 mt-4 text-sm">
-              Hiring instead?{' '}
+              {t('landing.hiringInstead')}{' '}
               <Link
                 to="/register?role=recruiter"
                 className="text-brand-700 font-medium hover:underline"
               >
-                Post a role free
+                {t('landing.postRoleFree')}
               </Link>
             </p>
           </div>
@@ -106,13 +94,17 @@ export function LandingPage() {
 
       <Container className="py-16">
         <div className="grid gap-6 md:grid-cols-3">
-          {FEATURES.map(({ icon: Icon, title, body }) => (
-            <div key={title} className="border-ink-200 rounded-card border bg-white p-6">
+          {FEATURES.map(({ icon: Icon, key }) => (
+            <div key={key} className="border-ink-200 rounded-card border bg-white p-6">
               <span className="bg-brand-50 text-brand-600 flex size-10 items-center justify-center rounded-lg">
                 <Icon className="size-5" aria-hidden="true" />
               </span>
-              <h2 className="mt-4 text-base font-semibold">{title}</h2>
-              <p className="text-ink-600 mt-2 text-sm leading-relaxed">{body}</p>
+              <h2 className="mt-4 text-base font-semibold">
+                {t(`landing.features.${key}.title`)}
+              </h2>
+              <p className="text-ink-600 mt-2 text-sm leading-relaxed">
+                {t(`landing.features.${key}.body`)}
+              </p>
             </div>
           ))}
         </div>
@@ -121,12 +113,12 @@ export function LandingPage() {
       <Container className="pb-16">
         <div className="mb-6 flex items-end justify-between gap-4">
           <div>
-            <h2 className="text-xl sm:text-2xl">Latest openings</h2>
-            <p className="text-ink-500 mt-1 text-sm">Fresh roles from teams hiring right now.</p>
+            <h2 className="text-xl sm:text-2xl">{t('landing.latestOpenings')}</h2>
+            <p className="text-ink-500 mt-1 text-sm">{t('landing.latestSubtitle')}</p>
           </div>
           <Button variant="outline" size="sm" to="/jobs">
-            View all
-            <ArrowRight className="size-4" aria-hidden="true" />
+            {t('landing.viewAll')}
+            <ForwardIcon className="size-4" aria-hidden="true" />
           </Button>
         </div>
 
@@ -136,7 +128,7 @@ export function LandingPage() {
 
           {latest.isError && (
             <ErrorState
-              title="Could not load the latest roles"
+              title={t('landing.couldNotLoadLatest')}
               message={errorMessage(latest.error)}
               onRetry={latest.refetch}
             />
@@ -144,13 +136,12 @@ export function LandingPage() {
 
           {latest.isSuccess && jobs.length === 0 && (
             <div className="border-ink-200 rounded-card border border-dashed bg-white px-6 py-12 text-center">
-              <p className="text-ink-900 font-medium">No roles published yet</p>
+              <p className="text-ink-900 font-medium">{t('landing.noRolesYet')}</p>
               <p className="text-ink-500 mt-1 text-sm">
-                Be the first —{' '}
+                {t('landing.beTheFirst')}{' '}
                 <Link to="/register?role=recruiter" className="text-brand-700 hover:underline">
-                  create an employer account
+                  {t('landing.createEmployerAccount')}
                 </Link>
-                .
               </p>
             </div>
           )}

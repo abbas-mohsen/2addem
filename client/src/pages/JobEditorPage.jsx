@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, FlaskConical, Sparkles } from 'lucide-react';
+import { FlaskConical, Sparkles } from 'lucide-react';
 import { jobsApi } from '../api/endpoints.js';
 import { errorMessage, fieldErrors } from '../api/client.js';
 import { Container, PageHeader } from '../components/layout/AppLayout.jsx';
@@ -13,6 +13,8 @@ import { FormSkeleton, PageHeaderSkeleton } from '../components/ui/Skeletons.jsx
 import { EMPLOYMENT_TYPES, REMOTE_TYPES } from '../lib/format.js';
 import { useFormat } from '../hooks/useFormat.js';
 import { useLocationSuggestions } from '../hooks/useLocationSuggestions.js';
+import { BackIcon } from '../components/ui/DirectionalIcon.jsx';
+import { useT } from '../i18n/index.jsx';
 
 const BLANK = {
   title: '',
@@ -67,6 +69,7 @@ function toFormState(job) {
 export function JobEditorPage() {
   const { id } = useParams();
   const isEdit = Boolean(id);
+  const t = useT();
 
   // Editing reads from the recruiter's own list so drafts are reachable too.
   const existing = useQuery({
@@ -95,12 +98,8 @@ export function JobEditorPage() {
     return (
       <Container className="py-14">
         <ErrorState
-          title="Could not open this job"
-          message={
-            existing.data === null
-              ? 'We could not find it among your company’s jobs.'
-              : errorMessage(existing.error)
-          }
+          title={t('editor.couldNotOpen')}
+          message={existing.data === null ? t('editor.notFound') : errorMessage(existing.error)}
           onRetry={existing.data === null ? undefined : existing.refetch}
         />
       </Container>
@@ -122,6 +121,7 @@ function JobForm({ jobId, job }) {
   const [draftNotice, setDraftNotice] = useState(null);
   const { data: locations = [] } = useLocationSuggestions();
   const format = useFormat();
+  const t = useT();
 
   const aiDraft = useMutation({
     mutationFn: jobsApi.aiDraft,
@@ -135,7 +135,7 @@ function JobForm({ jobId, job }) {
       setDraftNotice(disclaimer);
       setErrors((current) => ({ ...current, description: undefined }));
     },
-    onError: (error) => setSubmitError(errorMessage(error, 'Could not build a draft.')),
+    onError: (error) => setSubmitError(errorMessage(error, t('editor.draftFailed'))),
   });
 
   const save = useMutation({
@@ -148,7 +148,7 @@ function JobForm({ jobId, job }) {
     },
     onError: (error) => {
       setErrors(fieldErrors(error));
-      setSubmitError(errorMessage(error, 'Could not save this job.'));
+      setSubmitError(errorMessage(error, t('editor.errors.saveFailed')));
     },
   });
 
@@ -159,12 +159,12 @@ function JobForm({ jobId, job }) {
 
   const validate = () => {
     const next = {};
-    if (form.title.trim().length < 3) next.title = 'Give the role a title';
+    if (form.title.trim().length < 3) next.title = t('editor.errors.title');
     if (form.description.trim().length < 30) {
-      next.description = 'Describe the role in at least 30 characters';
+      next.description = t('editor.errors.description');
     }
     if (form.salaryMin && form.salaryMax && Number(form.salaryMin) > Number(form.salaryMax)) {
-      next.salaryMax = 'Maximum must be greater than the minimum';
+      next.salaryMax = t('editor.errors.salary');
     }
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -199,14 +199,14 @@ function JobForm({ jobId, job }) {
         to="/recruiter/jobs"
         className="text-ink-500 hover:text-ink-900 inline-flex items-center gap-1.5 text-sm"
       >
-        <ArrowLeft className="size-4" aria-hidden="true" />
-        Back to your jobs
+        <BackIcon className="size-4" aria-hidden="true" />
+        {t('common.backToJobs')}
       </Link>
 
       <div className="mx-auto mt-5 max-w-3xl">
         <PageHeader
-          title={isEdit ? 'Edit job' : 'Create a job'}
-          description="Save it as a draft while you work on it, or publish it straight to the board."
+          title={isEdit ? t('editor.editTitle') : t('editor.createTitle')}
+          description={t('editor.subtitle')}
         />
 
         <form
@@ -218,11 +218,11 @@ function JobForm({ jobId, job }) {
             </p>
           )}
 
-          <Field label="Job title" error={errors.title} required>
+          <Field label={t('editor.jobTitle')} error={errors.title} required>
             {(props) => (
               <Input
                 {...props}
-                placeholder="Senior Frontend Engineer"
+                placeholder={t('editor.jobTitlePlaceholder')}
                 value={form.title}
                 error={errors.title}
                 onChange={update('title')}
@@ -236,9 +236,9 @@ function JobForm({ jobId, job }) {
               <div>
                 <p className="text-ink-800 flex items-center gap-1.5 text-sm font-medium">
                   <FlaskConical className="text-ink-400 size-4" aria-hidden="true" />
-                  Draft builder
+                  {t('editor.draftBuilder')}
                   <span className="bg-ink-200 text-ink-600 ms-1 rounded px-1.5 py-0.5 text-[10px] font-semibold tracking-wide uppercase">
-                    Stub
+                    {t('editor.stub')}
                   </span>
                 </p>
                 <p className="text-ink-500 mt-1 max-w-lg text-xs">
@@ -265,12 +265,12 @@ function JobForm({ jobId, job }) {
                 }
               >
                 <Sparkles className="size-4" aria-hidden="true" />
-                Build a draft
+                {t('editor.buildDraft')}
               </Button>
             </div>
 
             {form.title.trim().length < 3 && (
-              <p className="text-ink-400 mt-2 text-xs">Add a job title first.</p>
+              <p className="text-ink-400 mt-2 text-xs">{t('editor.addTitleFirst')}</p>
             )}
 
             {draftNotice && (
@@ -280,12 +280,12 @@ function JobForm({ jobId, job }) {
             )}
           </div>
 
-          <Field label="About the role" error={errors.description} required>
+          <Field label={t('editor.about')} error={errors.description} required>
             {(props) => (
               <Textarea
                 {...props}
                 rows={8}
-                placeholder="What the team does, what this person will own, and why it matters."
+                placeholder={t('editor.aboutPlaceholder')}
                 value={form.description}
                 error={errors.description}
                 onChange={update('description')}
@@ -293,7 +293,7 @@ function JobForm({ jobId, job }) {
             )}
           </Field>
 
-          <Field label="Responsibilities" hint="One per line.">
+          <Field label={t('editor.responsibilities')} hint={t('editor.onePerLine')}>
             {(props) => (
               <Textarea
                 {...props}
@@ -305,7 +305,7 @@ function JobForm({ jobId, job }) {
             )}
           </Field>
 
-          <Field label="Requirements" hint="One per line.">
+          <Field label={t('editor.requirements')} hint={t('editor.onePerLine')}>
             {(props) => (
               <Textarea
                 {...props}
@@ -318,7 +318,7 @@ function JobForm({ jobId, job }) {
           </Field>
 
           <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="Location" hint="Suggestions cover Lebanese cities and governorates.">
+            <Field label={t('editor.location')} hint={t('editor.locationHint')}>
               {(props) => (
                 <>
                   <Input
@@ -337,7 +337,7 @@ function JobForm({ jobId, job }) {
               )}
             </Field>
 
-            <Field label="Work model">
+            <Field label={t('editor.workModel')}>
               {(props) => (
                 <Select {...props} value={form.remote} onChange={update('remote')}>
                   {REMOTE_TYPES.map((value) => (
@@ -349,7 +349,7 @@ function JobForm({ jobId, job }) {
               )}
             </Field>
 
-            <Field label="Employment type">
+            <Field label={t('editor.employmentType')}>
               {(props) => (
                 <Select {...props} value={form.employmentType} onChange={update('employmentType')}>
                   {EMPLOYMENT_TYPES.map((value) => (
@@ -361,7 +361,7 @@ function JobForm({ jobId, job }) {
               )}
             </Field>
 
-            <Field label="Currency" hint="Three-letter code, e.g. USD or EUR.">
+            <Field label={t('editor.currency')} hint={t('editor.currencyHint')}>
               {(props) => (
                 <Input
                   {...props}
@@ -372,7 +372,7 @@ function JobForm({ jobId, job }) {
               )}
             </Field>
 
-            <Field label="Salary from">
+            <Field label={t('editor.salaryFrom')}>
               {(props) => (
                 <Input
                   {...props}
@@ -386,7 +386,7 @@ function JobForm({ jobId, job }) {
               )}
             </Field>
 
-            <Field label="Salary to" error={errors.salaryMax}>
+            <Field label={t('editor.salaryTo')} error={errors.salaryMax}>
               {(props) => (
                 <Input
                   {...props}
@@ -404,7 +404,7 @@ function JobForm({ jobId, job }) {
 
           {/* Two facts a Lebanese listing has to state explicitly. */}
           <fieldset className="border-ink-200 space-y-3 rounded-lg border p-4">
-            <legend className="text-ink-800 px-1 text-sm font-medium">How this role pays</legend>
+            <legend className="text-ink-800 px-1 text-sm font-medium">{t('editor.payTitle')}</legend>
 
             <label className="text-ink-700 flex cursor-pointer items-start gap-2.5 text-sm">
               <input
@@ -416,9 +416,9 @@ function JobForm({ jobId, job }) {
                 }
               />
               <span>
-                Paid in fresh USD
+                {t('editor.freshUsd')}
                 <span className="text-ink-500 block text-xs">
-                  Shown on the listing as “fresh”. Uncheck for lira or local-bank dollars.
+                  {t('editor.freshUsdHint')}
                 </span>
               </span>
             </label>
@@ -433,19 +433,19 @@ function JobForm({ jobId, job }) {
                 }
               />
               <span>
-                Remote for a company based abroad
+                {t('editor.remoteAbroad')}
                 <span className="text-ink-500 block text-xs">
-                  Candidates filter on this more than any other option.
+                  {t('editor.remoteAbroadHint')}
                 </span>
               </span>
             </label>
           </fieldset>
 
-          <Field label="Skills" hint="Comma separated — these power search on the board.">
+          <Field label={t('editor.skills')} hint={t('editor.skillsHint')}>
             {(props) => (
               <Input
                 {...props}
-                placeholder="React, TypeScript, GraphQL"
+                placeholder={t('editor.skillsPlaceholder')}
                 value={form.skills}
                 onChange={update('skills')}
               />
@@ -454,7 +454,7 @@ function JobForm({ jobId, job }) {
 
           <div className="border-ink-200 flex flex-col-reverse gap-3 border-t pt-5 sm:flex-row sm:justify-end">
             <Button type="button" variant="outline" to="/recruiter/jobs">
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               type="submit"
@@ -462,14 +462,14 @@ function JobForm({ jobId, job }) {
               loading={save.isPending && save.variables?.status === 'draft'}
               onClick={submit('draft')}
             >
-              Save as draft
+              {t('editor.saveDraft')}
             </Button>
             <Button
               type="submit"
               loading={save.isPending && save.variables?.status === 'published'}
               onClick={submit('published')}
             >
-              {isEdit ? 'Save & publish' : 'Publish job'}
+              {isEdit ? t('editor.savePublish') : t('editor.publishJob')}
             </Button>
           </div>
         </form>
