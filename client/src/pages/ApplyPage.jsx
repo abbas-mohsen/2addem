@@ -153,7 +153,7 @@ export function ApplyPage() {
 
           <div className="space-y-1.5">
             <span className="text-ink-800 block text-sm font-medium">
-              Resume<span className="text-brand-600 ml-0.5">*</span>
+              Resume<span className="text-brand-600 ms-0.5">*</span>
             </span>
 
             {file ? (

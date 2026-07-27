@@ -20,9 +20,11 @@ import { BoardSkeleton, PageHeaderSkeleton } from '../components/ui/Skeletons.js
 import { StageColumn } from '../features/pipeline/StageColumn.jsx';
 import { ApplicantCard } from '../features/pipeline/ApplicantCard.jsx';
 import { ApplicantPanel } from '../features/pipeline/ApplicantPanel.jsx';
-import { STAGE_LABELS, STAGE_ORDER } from '../lib/format.js';
+import { STAGE_ORDER } from '../lib/format.js';
+import { useFormat } from '../hooks/useFormat.js';
 
 export function JobPipelinePage() {
+  const format = useFormat();
   const { id } = useParams();
   const queryClient = useQueryClient();
 
@@ -100,7 +102,7 @@ export function JobPipelinePage() {
     const application = applications.find((item) => item._id === active.id);
     if (!application || !STAGE_ORDER.includes(stage) || application.stage === stage) return;
 
-    setAnnouncement(`${application.candidate?.name ?? 'Candidate'} moved to ${STAGE_LABELS[stage]}`);
+    setAnnouncement(`${application.candidate?.name ?? 'Candidate'} moved to ${format.stage(stage)}`);
     setStage.mutate({ id: application._id, stage });
   };
 

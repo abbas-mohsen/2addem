@@ -56,7 +56,7 @@ export function ListRowsSkeleton({ count = 4, className }) {
 
 export function JobDetailSkeleton() {
   return (
-    <SkeletonGroup label="Loading role…">
+    <SkeletonGroup>
       <Container className="py-8 sm:py-12">
         <Skeleton className="h-4 w-24" />
 
@@ -106,7 +106,7 @@ export function JobDetailSkeleton() {
 
 export function BoardSkeleton({ columns = 5 }) {
   return (
-    <SkeletonGroup label="Loading pipeline…">
+    <SkeletonGroup>
       <div className="-mx-4 overflow-hidden px-4 sm:-mx-6 sm:px-6">
         <div className="flex min-w-max items-start gap-3">
           {Array.from({ length: columns }, (_, column) => (
@@ -114,7 +114,7 @@ export function BoardSkeleton({ columns = 5 }) {
               <div className="flex items-center gap-2 px-1 pb-3">
                 <Skeleton className="size-2 rounded-full" />
                 <Skeleton className="h-4 w-24" />
-                <Skeleton className="ml-auto h-5 w-6 rounded-full" />
+                <Skeleton className="ms-auto h-5 w-6 rounded-full" />
               </div>
 
               <div className="space-y-2">
@@ -139,7 +139,7 @@ export function BoardSkeleton({ columns = 5 }) {
 
 export function TableSkeleton({ rows = 6, columns = 5 }) {
   return (
-    <SkeletonGroup label="Loading…">
+    <SkeletonGroup>
       <div className="border-ink-200 rounded-card overflow-hidden border bg-white">
         <div className="border-ink-200 flex gap-6 border-b px-4 py-3">
           {Array.from({ length: columns }, (_, index) => (
@@ -165,7 +165,7 @@ export function TableSkeleton({ rows = 6, columns = 5 }) {
 
 export function FormSkeleton({ fields = 5 }) {
   return (
-    <SkeletonGroup label="Loading form…">
+    <SkeletonGroup>
       <div className="border-ink-200 rounded-card space-y-5 border bg-white p-5 sm:p-7">
         {Array.from({ length: fields }, (_, index) => (
           <div key={index} className="space-y-2">
@@ -185,7 +185,7 @@ export function FormSkeleton({ fields = 5 }) {
 /* Shown while the session is being restored, in place of a bare spinner. */
 export function PageBootSkeleton() {
   return (
-    <SkeletonGroup label="Loading…">
+    <SkeletonGroup>
       <Container className="py-10 sm:py-14">
         <PageHeaderSkeleton />
         <div className="mt-7">

@@ -1,7 +1,8 @@
 import { useDroppable } from '@dnd-kit/core';
 import { ApplicantCard } from './ApplicantCard.jsx';
-import { STAGE_LABELS } from '../../lib/format.js';
+
 import { cn } from '../../lib/cn.js';
+import { useFormat } from '../../hooks/useFormat.js';
 
 const STAGE_ACCENTS = {
   applied: 'bg-ink-300',
@@ -13,12 +14,13 @@ const STAGE_ACCENTS = {
 };
 
 export function StageColumn({ stage, applications, onOpen, activeId }) {
+  const format = useFormat();
   const { setNodeRef, isOver } = useDroppable({ id: stage });
 
   return (
     <section
       ref={setNodeRef}
-      aria-label={`${STAGE_LABELS[stage]} — ${applications.length} candidates`}
+      aria-label={`${format.stage(stage)} — ${applications.length} candidates`}
       className={cn(
         'flex w-72 shrink-0 flex-col rounded-xl border p-2.5 transition-colors',
         isOver ? 'border-brand-300 bg-brand-50/70' : 'border-ink-200 bg-ink-50/60'
@@ -26,8 +28,8 @@ export function StageColumn({ stage, applications, onOpen, activeId }) {
     >
       <header className="flex items-center gap-2 px-1 pb-2.5">
         <span className={cn('size-2 rounded-full', STAGE_ACCENTS[stage])} aria-hidden="true" />
-        <h2 className="text-ink-800 text-sm font-semibold">{STAGE_LABELS[stage]}</h2>
-        <span className="text-ink-500 bg-ink-200/70 ml-auto rounded-full px-2 py-0.5 text-xs tabular-nums">
+        <h2 className="text-ink-800 text-sm font-semibold">{format.stage(stage)}</h2>
+        <span className="text-ink-500 bg-ink-200/70 ms-auto rounded-full px-2 py-0.5 text-xs tabular-nums">
           {applications.length}
         </span>
       </header>

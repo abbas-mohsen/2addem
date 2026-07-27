@@ -13,6 +13,10 @@ const notificationSchema = new mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     type: { type: String, enum: NOTIFICATION_TYPES, required: true },
+    /* The client renders `type` + `params` in the reader's language. `message`
+       is the English rendering, kept as a fallback for rows written before
+       params existed and for anything the client cannot resolve. */
+    params: { type: mongoose.Schema.Types.Mixed, default: {} },
     message: { type: String, required: true, trim: true, maxlength: 300 },
     // Where clicking the notification should take the user.
     link: { type: String, trim: true, maxlength: 300, default: '' },

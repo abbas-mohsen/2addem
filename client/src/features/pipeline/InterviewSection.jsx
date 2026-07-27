@@ -7,7 +7,9 @@ import { Badge } from '../../components/ui/Badge.jsx';
 import { Button } from '../../components/ui/Button.jsx';
 import { Field, Input, Select, Textarea } from '../../components/ui/Field.jsx';
 import { Skeleton } from '../../components/ui/States.jsx';
-import { INTERVIEW_LOCATION_LABELS, formatDateTime } from '../../lib/format.js';
+import { INTERVIEW_FORMATS } from '../../lib/format.js';
+import { useFormat } from '../../hooks/useFormat.js';
+import { useT } from '../../i18n/index.jsx';
 import { cn } from '../../lib/cn.js';
 
 /* datetime-local wants a local "YYYY-MM-DDTHH:mm", not an ISO string. */
@@ -27,6 +29,9 @@ const PLACEHOLDERS = {
 
 export function InterviewSection({ applicationId, disabled }) {
   const queryClient = useQueryClient();
+  const format = useFormat();
+  const t = useT();
+
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
     scheduledFor: defaultSlot(),
@@ -55,7 +60,7 @@ export function InterviewSection({ applicationId, disabled }) {
       invalidate();
     },
     onError: (mutationError) =>
-      setError(errorMessage(mutationError, 'Could not schedule that interview.')),
+      setError(errorMessage(mutationError, t('applicant.scheduleFailed'))),
   });
 
   const cancel = useMutation({
@@ -71,7 +76,7 @@ export function InterviewSection({ applicationId, disabled }) {
   return (
     <section>
       <h3 className="text-ink-500 mb-2 text-xs font-semibold tracking-wide uppercase">
-        Interviews ({interviews.length})
+        {t('applicant.interviewsCount', { count: interviews.length })}
       </h3>
 
       {query.isPending && <Skeleton className="h-20 rounded-lg" />}
@@ -99,12 +104,12 @@ export function InterviewSection({ applicationId, disabled }) {
                 <div className="min-w-0">
                   <p className="text-ink-900 flex items-center gap-1.5 text-sm font-medium">
                     <CalendarClock className="text-ink-400 size-4" aria-hidden="true" />
-                    {formatDateTime(interview.scheduledFor)}
+                    {format.dateTime(interview.scheduledFor)}
                   </p>
                   <p className="text-ink-500 mt-1 flex items-center gap-1.5 text-xs">
                     <Icon className="size-3.5" aria-hidden="true" />
-                    {INTERVIEW_LOCATION_LABELS[interview.locationType]} ·{' '}
-                    {interview.durationMins} min
+                    {format.interviewFormat(interview.locationType)} ·{' '}
+                    {t('applicant.minutes', { count: interview.durationMins })}
                   </p>
                   {interview.location && (
                     <p className="text-ink-600 mt-1 truncate text-xs">{interview.location}</p>
@@ -116,9 +121,9 @@ export function InterviewSection({ applicationId, disabled }) {
 
                 <div className="flex shrink-0 flex-col items-end gap-1.5">
                   {cancelled ? (
-                    <Badge tone="neutral">Cancelled</Badge>
+                    <Badge tone="neutral">{t('applicant.cancelled')}</Badge>
                   ) : (
-                    <Badge tone="warning">Scheduled</Badge>
+                    <Badge tone="warning">{t('applicant.scheduled')}</Badge>
                   )}
                   {!cancelled && !disabled && (
                     <button
@@ -126,14 +131,14 @@ export function InterviewSection({ applicationId, disabled }) {
                       onClick={() => cancel.mutate(interview._id)}
                       className="text-ink-400 text-xs hover:text-red-600"
                     >
-                      Cancel
+                      {t('applicant.cancelInterview')}
                     </button>
                   )}
                   {cancelled && (
                     <button
                       type="button"
                       onClick={() => remove.mutate(interview._id)}
-                      aria-label="Remove interview"
+                      aria-label={t('applicant.removeInterview')}
                       className="text-ink-300 hover:text-red-600"
                     >
                       <Trash2 className="size-3.5" />
@@ -146,7 +151,7 @@ export function InterviewSection({ applicationId, disabled }) {
         })}
 
         {query.isSuccess && interviews.length === 0 && !showForm && (
-          <p className="text-ink-400 text-sm">No interviews booked yet.</p>
+          <p className="text-ink-400 text-sm">{t('applicant.noInterviews')}</p>
         )}
       </div>
 
@@ -167,7 +172,7 @@ export function InterviewSection({ applicationId, disabled }) {
           }}
         >
           <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="When" required>
+            <Field label={t('applicant.when')} required>
               {(props) => (
                 <Input
                   {...props}
@@ -179,7 +184,7 @@ export function InterviewSection({ applicationId, disabled }) {
               )}
             </Field>
 
-            <Field label="Duration (min)">
+            <Field label={t('applicant.duration')}>
               {(props) => (
                 <Input
                   {...props}
@@ -197,7 +202,7 @@ export function InterviewSection({ applicationId, disabled }) {
             </Field>
           </div>
 
-          <Field label="Format">
+          <Field label={t('applicant.format')}>
             {(props) => (
               <Select
                 {...props}
@@ -205,16 +210,20 @@ export function InterviewSection({ applicationId, disabled }) {
                 value={form.locationType}
                 onChange={update('locationType')}
               >
-                {Object.entries(INTERVIEW_LOCATION_LABELS).map(([value, label]) => (
+                {INTERVIEW_FORMATS.map((value) => (
                   <option key={value} value={value}>
-                    {label}
+                    {format.interviewFormat(value)}
                   </option>
                 ))}
               </Select>
             )}
           </Field>
 
-          <Field label={form.locationType === 'onsite' ? 'Address' : 'Link or number'}>
+          <Field
+            label={
+              form.locationType === 'onsite' ? t('applicant.address') : t('applicant.linkOrNumber')
+            }
+          >
             {(props) => (
               <Input
                 {...props}
@@ -226,13 +235,13 @@ export function InterviewSection({ applicationId, disabled }) {
             )}
           </Field>
 
-          <Field label="What to expect" hint="Shown to the candidate in their invite.">
+          <Field label={t('applicant.whatToExpect')} hint={t('applicant.whatToExpectHint')}>
             {(props) => (
               <Textarea
                 {...props}
                 rows={2}
                 className="text-sm"
-                placeholder="Technical round — walk through a past project, then a short pairing exercise."
+                placeholder={t('applicant.whatToExpectPlaceholder')}
                 value={form.notes}
                 onChange={update('notes')}
               />
@@ -241,17 +250,17 @@ export function InterviewSection({ applicationId, disabled }) {
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="ghost" size="sm" onClick={() => setShowForm(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" size="sm" loading={create.isPending}>
-              Schedule
+              {t('applicant.schedule')}
             </Button>
           </div>
         </form>
       ) : (
         <Button variant="outline" size="sm" className="mt-3" onClick={() => setShowForm(true)}>
           <CalendarClock className="size-4" aria-hidden="true" />
-          Schedule an interview
+          {t('applicant.scheduleInterview')}
         </Button>
       )}
     </section>

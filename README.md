@@ -254,8 +254,33 @@ A few things a job board here has to get right, and which a generic clone gets w
 - **Phone numbers** are on candidate profiles and shown to recruiters, formatted `+961` by default
   but not forced, since diaspora applicants have foreign numbers.
 
-Arabic and RTL are **not** done. That is a layout pass across every page plus a translation layer,
-not a string swap, and it deserves its own phase.
+### Arabic and RTL
+
+The app ships bilingual. A switcher in the nav flips between English and العربية; the choice is
+kept in `localStorage` and, for signed-in users, saved to `user.locale` so notifications and email
+arrive in the same language.
+
+How it is built:
+
+- **A ~150-line i18n module** rather than react-i18next. The needs are lookup, interpolation and
+  plurals, and `Intl.PluralRules` already handles the hard part — Arabic has six plural categories
+  (`zero`, `one`, `two`, `few`, `many`, `other`) and the dictionaries supply all of them. Roughly
+  two kilobytes against forty.
+- **Missing Arabic falls back to English**, so an untranslated string degrades to readable text
+  rather than a raw key. In development a missing key throws, so gaps surface in tests.
+- **Layout is logical, not physical.** Every `pl-*`/`mr-*`/`left-*`/`text-left` was converted to
+  `ps-*`/`me-*`/`start-*`/`text-start`, so direction is a single `dir` attribute rather than a
+  parallel stylesheet. Icons that mean *back* or *next* flip; icons that mean a thing (download,
+  mail, star) do not. The skeleton sweep reverses too.
+- **Notifications are stored as a type plus parameters**, not a baked English sentence, so the bell
+  renders them in whichever language the reader has chosen.
+- **No webfont.** Arabic faces are appended to the same font stack, so the app stays offline-safe.
+
+**Not yet extracted:** page body copy on the landing page, auth pages, and the recruiter and admin
+screens still renders in English even in Arabic mode. The dictionary entries for all of it are
+already written in `client/src/i18n/`; what remains is wiring those pages to `t()`. Everything
+shared — navigation, footer, job cards, filters, all enum labels, every date, salary and relative
+time — is fully translated.
 
 ### File storage
 
@@ -389,7 +414,9 @@ Sign-in and sign-up are rate limited, so many rapid account switches will start 
 
 - [x] **Market localization** — Lebanese location autocomplete, fresh-USD salaries, a
       remote-for-abroad filter, freelance as an employment type, and phone numbers on profiles
-- [ ] **Arabic + RTL** — a translation layer and a full right-to-left layout pass. Deliberately
-      left as its own phase; it is not a string swap.
+- [x] **Arabic + RTL** — i18n layer with Arabic plurals, a language switcher, logical-property
+      layout, direction-aware icons, localised dates/salaries/enums, and notifications rendered
+      from stored parameters. Page body copy on auth, landing and the recruiter/admin screens is
+      still being wired to `t()`.
 
 Explicitly out of scope: multiposting to external job boards, payments, and real AI generation.

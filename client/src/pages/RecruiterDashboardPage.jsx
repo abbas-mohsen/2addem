@@ -7,8 +7,9 @@ import { useAuthStore } from '../context/authStore.js';
 import { Container, PageHeader } from '../components/layout/AppLayout.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { EmptyState, ErrorState, Skeleton } from '../components/ui/States.jsx';
-import { STAGE_LABELS, STAGE_ORDER } from '../lib/format.js';
+import { STAGE_ORDER } from '../lib/format.js';
 import { cn } from '../lib/cn.js';
+import { useFormat } from '../hooks/useFormat.js';
 
 const STAGE_BARS = {
   applied: 'bg-ink-300',
@@ -20,6 +21,7 @@ const STAGE_BARS = {
 };
 
 export function RecruiterDashboardPage() {
+  const format = useFormat();
   const user = useAuthStore((state) => state.user);
 
   const query = useQuery({
@@ -108,7 +110,7 @@ export function RecruiterDashboardPage() {
                 return (
                   <li key={stage} className="flex items-center gap-3">
                     <span className="text-ink-600 w-24 shrink-0 text-sm">
-                      {STAGE_LABELS[stage]}
+                      {format.stage(stage)}
                     </span>
                     <span className="bg-ink-100 h-2.5 flex-1 overflow-hidden rounded-full">
                       <span
@@ -116,7 +118,7 @@ export function RecruiterDashboardPage() {
                         style={{ width: `${(count / max) * 100}%` }}
                       />
                     </span>
-                    <span className="text-ink-900 w-7 text-right text-sm font-medium tabular-nums">
+                    <span className="text-ink-900 w-7 text-end text-sm font-medium tabular-nums">
                       {count}
                     </span>
                   </li>
@@ -155,7 +157,7 @@ export function RecruiterDashboardPage() {
                   </div>
                   <span className="text-ink-900 shrink-0 text-sm font-semibold tabular-nums">
                     {job.applicationCount}
-                    <span className="text-ink-400 ml-1 font-normal">
+                    <span className="text-ink-400 ms-1 font-normal">
                       applicant{job.applicationCount === 1 ? '' : 's'}
                     </span>
                   </span>

@@ -12,8 +12,9 @@ import { Input, Select } from '../components/ui/Field.jsx';
 import { EmptyState, ErrorState, Skeleton } from '../components/ui/States.jsx';
 import { ListRowsSkeleton, TableSkeleton } from '../components/ui/Skeletons.jsx';
 import { Pagination } from '../components/ui/Pagination.jsx';
-import { formatDate } from '../lib/format.js';
+
 import { cn } from '../lib/cn.js';
+import { useFormat } from '../hooks/useFormat.js';
 
 const TABS = [
   { value: 'users', label: 'Users' },
@@ -120,12 +121,12 @@ function SearchInput({ value, onChange, placeholder }) {
   return (
     <div className="relative min-w-56 flex-1">
       <Search
-        className="text-ink-400 pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
+        className="text-ink-400 pointer-events-none absolute top-1/2 start-3 size-4 -translate-y-1/2"
         aria-hidden="true"
       />
       <Input
         type="search"
-        className="pl-9"
+        className="ps-9"
         placeholder={placeholder}
         aria-label={placeholder}
         value={value}
@@ -136,6 +137,7 @@ function SearchInput({ value, onChange, placeholder }) {
 }
 
 function UsersTab() {
+  const format = useFormat();
   const queryClient = useQueryClient();
   const currentUser = useAuthStore((state) => state.user);
 
@@ -218,7 +220,7 @@ function UsersTab() {
       {users.length > 0 && (
         <div className="border-ink-200 rounded-card overflow-x-auto border bg-white">
           <table className="w-full min-w-[46rem] text-sm">
-            <thead className="border-ink-200 text-ink-500 border-b text-left text-xs uppercase">
+            <thead className="border-ink-200 text-ink-500 border-b text-start text-xs uppercase">
               <tr>
                 <th className="px-4 py-3 font-medium">Name</th>
                 <th className="px-4 py-3 font-medium">Role</th>
@@ -248,7 +250,7 @@ function UsersTab() {
                       <span className="text-ink-300">—</span>
                     )}
                   </td>
-                  <td className="text-ink-500 px-4 py-3">{formatDate(user.createdAt)}</td>
+                  <td className="text-ink-500 px-4 py-3">{format.date(user.createdAt)}</td>
                   <td className="px-4 py-3">
                     {user.isActive ? (
                       <Badge tone="success">Active</Badge>
@@ -256,7 +258,7 @@ function UsersTab() {
                       <Badge tone="danger">Deactivated</Badge>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-end">
                     {String(user._id) !== String(currentUser?._id) && user.role !== 'admin' && (
                       <Button
                         variant={user.isActive ? 'danger' : 'outline'}
@@ -285,6 +287,7 @@ function UsersTab() {
 }
 
 function JobsTab() {
+  const format = useFormat();
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState({ q: '', status: '' });
   const [page, setPage] = useState(1);
@@ -373,7 +376,7 @@ function JobsTab() {
               </div>
               <p className="text-ink-500 mt-1 text-xs">
                 {job.company?.name} · posted by {job.createdBy?.name} ·{' '}
-                {formatDate(job.createdAt)}
+                {format.date(job.createdAt)}
               </p>
               <p className="text-ink-500 mt-1 text-xs">
                 {job.applicationCount} applicant{job.applicationCount === 1 ? '' : 's'} ·{' '}
@@ -416,6 +419,7 @@ function JobsTab() {
 }
 
 function CompaniesTab() {
+  const format = useFormat();
   const [page, setPage] = useState(1);
 
   const query = useQuery({
@@ -447,7 +451,7 @@ function CompaniesTab() {
                 .filter(Boolean)
                 .join(' · ') || 'No profile details yet'}
             </p>
-            <p className="text-ink-400 mt-1 text-xs">Created {formatDate(company.createdAt)}</p>
+            <p className="text-ink-400 mt-1 text-xs">Created {format.date(company.createdAt)}</p>
           </article>
         ))}
       </div>

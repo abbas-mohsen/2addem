@@ -10,8 +10,9 @@ import { Button } from '../components/ui/Button.jsx';
 import { EmptyState, ErrorState } from '../components/ui/States.jsx';
 import { ListRowsSkeleton } from '../components/ui/Skeletons.jsx';
 import { Pagination } from '../components/ui/Pagination.jsx';
-import { EMPLOYMENT_LABELS, REMOTE_LABELS, formatRelative } from '../lib/format.js';
+
 import { cn } from '../lib/cn.js';
+import { useFormat } from '../hooks/useFormat.js';
 
 const TABS = [
   { value: '', label: 'All' },
@@ -145,6 +146,7 @@ function StatCard({ label, value }) {
 }
 
 function JobRow({ job, onStatusChange, updating }) {
+  const format = useFormat();
   return (
     <article className="border-ink-200 rounded-card shadow-card border bg-white p-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -161,10 +163,10 @@ function JobRow({ job, onStatusChange, updating }) {
           </div>
 
           <p className="text-ink-500 mt-1 text-sm">
-            {job.location || REMOTE_LABELS[job.remote]} · {EMPLOYMENT_LABELS[job.employmentType]} ·{' '}
+            {job.location || format.remote(job.remote)} · {format.employment(job.employmentType)} ·{' '}
             {job.status === 'published' && job.publishedAt
-              ? `published ${formatRelative(job.publishedAt)}`
-              : `created ${formatRelative(job.createdAt)}`}
+              ? `published ${format.relative(job.publishedAt)}`
+              : `created ${format.relative(job.createdAt)}`}
           </p>
 
           <div className="text-ink-500 mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm">

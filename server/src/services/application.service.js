@@ -14,7 +14,6 @@ import {
   notifyApplicationSubmitted,
   notifyStageChanged,
 } from './notification.service.js';
-import { STAGE_LABELS } from '../utils/labels.js';
 
 const CANDIDATE_CARD_FIELDS =
   'name email avatarUrl profile.headline profile.location profile.phone profile.skills';
@@ -142,10 +141,5 @@ export async function notifyStageChange(application) {
   if (!candidate || !job || !company) return;
 
   stageChangedEmail({ candidate, job, company, stage: application.stage });
-  notifyStageChanged({
-    candidateId: candidate._id,
-    job,
-    company,
-    stageLabel: STAGE_LABELS[application.stage],
-  });
+  notifyStageChanged({ candidateId: candidate._id, job, company, stage: application.stage });
 }

@@ -1,17 +1,20 @@
 import { Link } from 'react-router-dom';
 import { cn } from '../../lib/cn.js';
+import { useT } from '../../i18n/index.jsx';
 
 /* The mark is the Arabizi "2" of 2addem (قدّم, "apply") whose base stroke runs
    out into an arrow — the root ق-د-م means to step forward. Drawn as geometry
    rather than text so it never depends on a font being available. */
 export function LogoMark({ size = 32, className }) {
+  const t = useT();
+
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 40 40"
       role="img"
-      aria-label="2addem"
+      aria-label={t('common.appName')}
       className={cn('shrink-0', className)}
     >
       <rect width="40" height="40" rx="10" className="fill-brand-600" />
@@ -40,8 +43,10 @@ export function Wordmark({ className }) {
 }
 
 export function Logo({ className }) {
+  const t = useT();
+
   return (
-    <Link to="/" className={cn('flex items-center gap-2.5', className)} aria-label="2addem home">
+    <Link to="/" className={cn('flex items-center gap-2.5', className)} aria-label={t('nav.home')}>
       <LogoMark />
       <Wordmark />
     </Link>

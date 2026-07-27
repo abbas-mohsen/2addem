@@ -10,7 +10,8 @@ import { Input, Textarea } from '../components/ui/Field.jsx';
 import { EmptyState, ErrorState } from '../components/ui/States.jsx';
 import { ListRowsSkeleton } from '../components/ui/Skeletons.jsx';
 import { Pagination } from '../components/ui/Pagination.jsx';
-import { formatRelative, initials } from '../lib/format.js';
+import { initials } from '../lib/format.js';
+import { useFormat } from '../hooks/useFormat.js';
 
 export function TalentPoolPage() {
   const queryClient = useQueryClient();
@@ -51,12 +52,12 @@ export function TalentPoolPage() {
       <div className="mt-6 flex flex-wrap gap-3">
         <div className="relative min-w-56 flex-1">
           <Search
-            className="text-ink-400 pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
+            className="text-ink-400 pointer-events-none absolute top-1/2 start-3 size-4 -translate-y-1/2"
             aria-hidden="true"
           />
           <Input
             type="search"
-            className="pl-9"
+            className="ps-9"
             placeholder="Search name, headline or note"
             aria-label="Search the talent pool"
             value={search}
@@ -138,6 +139,7 @@ export function TalentPoolPage() {
 }
 
 function PoolCard({ entry, onRemove, onSaveNote, removing, savingNote }) {
+  const format = useFormat();
   const [note, setNote] = useState(entry.note ?? '');
   const [editing, setEditing] = useState(false);
   const candidate = entry.candidate;
@@ -201,7 +203,7 @@ function PoolCard({ entry, onRemove, onSaveNote, removing, savingNote }) {
 
         <div className="flex flex-col items-end gap-2">
           <span className="text-ink-400 text-xs">
-            Saved {formatRelative(entry.createdAt)}
+            Saved {format.relative(entry.createdAt)}
             {entry.savedBy?.name ? ` by ${entry.savedBy.name}` : ''}
           </span>
           <Button variant="ghost" size="sm" loading={removing} onClick={onRemove}>
@@ -249,7 +251,7 @@ function PoolCard({ entry, onRemove, onSaveNote, removing, savingNote }) {
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="text-ink-600 hover:text-ink-900 w-full text-left text-sm"
+            className="text-ink-600 hover:text-ink-900 w-full text-start text-sm"
           >
             {entry.note || <span className="text-ink-400">Add a note…</span>}
           </button>

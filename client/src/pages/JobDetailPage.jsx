@@ -10,14 +10,11 @@ import { Button } from '../components/ui/Button.jsx';
 import { CompanyLogo } from '../components/ui/Logo.jsx';
 import { ErrorState } from '../components/ui/States.jsx';
 import { JobDetailSkeleton } from '../components/ui/Skeletons.jsx';
-import {
-  EMPLOYMENT_LABELS,
-  REMOTE_LABELS,
-  formatRelative,
-  formatSalary,
-} from '../lib/format.js';
+import { useFormat } from '../hooks/useFormat.js';
+
 
 export function JobDetailPage() {
+  const format = useFormat();
   const { slug } = useParams();
   const user = useAuthStore((state) => state.user);
 
@@ -51,7 +48,7 @@ export function JobDetailPage() {
   }
 
   const { job, hasApplied } = query.data;
-  const salary = formatSalary(job);
+  const salary = format.salary(job);
   const isOpen = job.status === 'published';
   const canApply = !user || user.role === 'candidate';
 
@@ -85,13 +82,13 @@ export function JobDetailPage() {
               <div className="flex items-center gap-2">
                 <MapPin className="text-ink-400 size-4" aria-hidden="true" />
                 <dt className="sr-only">Location</dt>
-                <dd>{job.location || REMOTE_LABELS[job.remote]}</dd>
+                <dd>{job.location || format.remote(job.remote)}</dd>
               </div>
               <div className="flex items-center gap-2">
                 <Briefcase className="text-ink-400 size-4" aria-hidden="true" />
                 <dt className="sr-only">Employment type</dt>
                 <dd>
-                  {EMPLOYMENT_LABELS[job.employmentType]} · {REMOTE_LABELS[job.remote]}
+                  {format.employment(job.employmentType)} · {format.remote(job.remote)}
                 </dd>
               </div>
               {salary && (
@@ -104,7 +101,7 @@ export function JobDetailPage() {
               <div className="flex items-center gap-2">
                 <Clock className="text-ink-400 size-4" aria-hidden="true" />
                 <dt className="sr-only">Published</dt>
-                <dd>Posted {formatRelative(job.publishedAt ?? job.createdAt)}</dd>
+                <dd>Posted {format.relative(job.publishedAt ?? job.createdAt)}</dd>
               </div>
             </dl>
 

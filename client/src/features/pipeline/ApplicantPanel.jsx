@@ -8,10 +8,12 @@ import { Badge, STAGE_TONES } from '../../components/ui/Badge.jsx';
 import { Button } from '../../components/ui/Button.jsx';
 import { Input, Select, Textarea } from '../../components/ui/Field.jsx';
 import { Skeleton, SkeletonGroup } from '../../components/ui/States.jsx';
-import { STAGE_LABELS, STAGE_ORDER, formatRelative, initials } from '../../lib/format.js';
+import { STAGE_ORDER, initials } from '../../lib/format.js';
 import { cn } from '../../lib/cn.js';
+import { useFormat } from '../../hooks/useFormat.js';
 
 export function ApplicantPanel({ applicationId, jobId, onClose }) {
+  const format = useFormat();
   const queryClient = useQueryClient();
   const [noteBody, setNoteBody] = useState('');
   const [tagDraft, setTagDraft] = useState('');
@@ -67,7 +69,7 @@ export function ApplicantPanel({ applicationId, jobId, onClose }) {
         role="dialog"
         aria-modal="true"
         aria-label="Applicant details"
-        className="border-ink-200 fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l bg-white shadow-2xl"
+        className="border-ink-200 fixed inset-y-0 end-0 z-50 flex w-full max-w-md flex-col border-s bg-white shadow-2xl"
       >
         <header className="border-ink-200 flex items-start gap-3 border-b p-5">
           {application ? (
@@ -88,7 +90,7 @@ export function ApplicantPanel({ applicationId, jobId, onClose }) {
                   </p>
                 )}
                 <p className="text-ink-400 mt-1 text-xs">
-                  Applied {formatRelative(application.createdAt)}
+                  Applied {format.relative(application.createdAt)}
                 </p>
               </div>
             </>
@@ -147,7 +149,7 @@ export function ApplicantPanel({ applicationId, jobId, onClose }) {
                 ) : (
                   <>
                     <Badge tone={STAGE_TONES[application.stage]}>
-                      {STAGE_LABELS[application.stage]}
+                      {format.stage(application.stage)}
                     </Badge>
                     <Select
                       aria-label="Move to stage"
@@ -160,7 +162,7 @@ export function ApplicantPanel({ applicationId, jobId, onClose }) {
                     >
                       {STAGE_ORDER.map((stage) => (
                         <option key={stage} value={stage}>
-                          {STAGE_LABELS[stage]}
+                          {format.stage(stage)}
                         </option>
                       ))}
                     </Select>
@@ -319,7 +321,7 @@ export function ApplicantPanel({ applicationId, jobId, onClose }) {
                     <div key={note._id} className="bg-ink-50 rounded-lg p-3">
                       <p className="text-ink-700 text-sm whitespace-pre-line">{note.body}</p>
                       <p className="text-ink-400 mt-1.5 text-xs">
-                        {note.author?.name ?? 'Teammate'} · {formatRelative(note.createdAt)}
+                        {note.author?.name ?? 'Teammate'} · {format.relative(note.createdAt)}
                       </p>
                     </div>
                   ))}
@@ -403,7 +405,7 @@ function ScorePicker({ value, onChange, disabled }) {
           type="button"
           onClick={() => onChange(null)}
           disabled={disabled}
-          className="text-ink-400 hover:text-ink-700 ml-2 text-xs"
+          className="text-ink-400 hover:text-ink-700 ms-2 text-xs"
         >
           Clear
         </button>

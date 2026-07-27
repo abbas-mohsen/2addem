@@ -2,10 +2,12 @@ import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Star } from 'lucide-react';
 import { Badge } from '../../components/ui/Badge.jsx';
-import { formatRelative, initials } from '../../lib/format.js';
+import { initials } from '../../lib/format.js';
 import { cn } from '../../lib/cn.js';
+import { useFormat } from '../../hooks/useFormat.js';
 
 export function ApplicantCard({ application, onOpen, dragging = false, overlay = false }) {
+  const format = useFormat();
   const withdrawn = application.status === 'withdrawn';
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -31,7 +33,7 @@ export function ApplicantCard({ application, onOpen, dragging = false, overlay =
         {!withdrawn && !overlay && (
           <button
             type="button"
-            className="text-ink-300 hover:text-ink-600 -ml-1 cursor-grab touch-none rounded p-0.5 active:cursor-grabbing"
+            className="text-ink-300 hover:text-ink-600 -ms-1 cursor-grab touch-none rounded p-0.5 active:cursor-grabbing"
             aria-label={`Drag ${application.candidate?.name ?? 'candidate'}`}
             {...listeners}
             {...attributes}
@@ -43,7 +45,7 @@ export function ApplicantCard({ application, onOpen, dragging = false, overlay =
         <button
           type="button"
           onClick={() => onOpen?.(application)}
-          className="min-w-0 flex-1 text-left"
+          className="min-w-0 flex-1 text-start"
         >
           <div className="flex items-center gap-2">
             <span
@@ -84,7 +86,7 @@ export function ApplicantCard({ application, onOpen, dragging = false, overlay =
           </div>
 
           <p className="text-ink-400 mt-2 text-[11px]">
-            Applied {formatRelative(application.createdAt)}
+            Applied {format.relative(application.createdAt)}
           </p>
         </button>
       </div>

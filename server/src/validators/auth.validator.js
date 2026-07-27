@@ -26,6 +26,7 @@ export const loginSchema = z.object({
 
 export const updateProfileSchema = z.object({
   name: z.string().trim().min(2).max(120).optional(),
+  locale: z.enum(['en', 'ar']).optional(),
   avatarUrl: z.string().trim().url().or(z.literal('')).optional(),
   profile: z
     .object({

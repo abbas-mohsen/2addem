@@ -1,11 +1,14 @@
 import { AlertTriangle } from 'lucide-react';
 import { cn } from '../../lib/cn.js';
 import { Button } from './Button.jsx';
+import { useT } from '../../i18n/index.jsx';
 
 /* Loading is expressed with skeletons (see Skeletons.jsx), not spinners — the
    only spinner left in the app is the one inside a pending Button. */
 
-export function ErrorState({ title = 'Something went wrong', message, onRetry, className }) {
+export function ErrorState({ title, message, onRetry, className }) {
+  const t = useT();
+
   return (
     <div
       className={cn(
@@ -16,12 +19,12 @@ export function ErrorState({ title = 'Something went wrong', message, onRetry, c
     >
       <AlertTriangle className="size-6 text-red-500" aria-hidden="true" />
       <div>
-        <p className="text-ink-900 font-medium">{title}</p>
+        <p className="text-ink-900 font-medium">{title ?? t('common.somethingWrong')}</p>
         {message && <p className="text-ink-500 mt-1 text-sm">{message}</p>}
       </div>
       {onRetry && (
         <Button variant="outline" size="sm" onClick={onRetry}>
-          Try again
+          {t('common.tryAgain')}
         </Button>
       )}
     </div>
@@ -55,11 +58,15 @@ export function Skeleton({ className }) {
 }
 
 /* Wraps a set of skeletons so assistive tech announces "loading" once, instead
-   of reading out a wall of empty boxes. */
-export function SkeletonGroup({ label = 'Loading…', className, children }) {
+   of reading out a wall of empty boxes. The label is passed in already
+   translated by the caller. */
+export function SkeletonGroup({ label, className, children }) {
+  const t = useT();
+  const announced = label ?? t('common.loading');
+
   return (
-    <div role="status" aria-busy="true" aria-label={label} className={className}>
-      <span className="sr-only">{label}</span>
+    <div role="status" aria-busy="true" aria-label={announced} className={className}>
+      <span className="sr-only">{announced}</span>
       {children}
     </div>
   );

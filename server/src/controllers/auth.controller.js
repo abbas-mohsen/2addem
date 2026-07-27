@@ -70,9 +70,10 @@ export const me = asyncHandler(async (req, res) => {
 });
 
 export const updateMe = asyncHandler(async (req, res) => {
-  const { name, avatarUrl, profile } = req.body;
+  const { name, avatarUrl, profile, locale } = req.body;
   const user = req.user;
 
+  if (locale !== undefined) user.locale = locale;
   if (name !== undefined) user.name = name;
   if (avatarUrl !== undefined) user.avatarUrl = avatarUrl;
   if (profile) {

@@ -10,14 +10,9 @@ import { CompanyLogo } from '../components/ui/Logo.jsx';
 import { EmptyState, ErrorState } from '../components/ui/States.jsx';
 import { ListRowsSkeleton } from '../components/ui/Skeletons.jsx';
 import { Pagination } from '../components/ui/Pagination.jsx';
-import {
-  INTERVIEW_LOCATION_LABELS,
-  STAGE_LABELS,
-  STAGE_ORDER,
-  formatDateTime,
-  formatRelative,
-} from '../lib/format.js';
+import { STAGE_ORDER } from '../lib/format.js';
 import { cn } from '../lib/cn.js';
+import { useFormat } from '../hooks/useFormat.js';
 
 export function MyApplicationsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -111,6 +106,7 @@ export function MyApplicationsPage() {
 /* Only shown when something is actually booked — an empty "no interviews" card
    would be noise on a dashboard that already has an empty state. */
 function UpcomingInterviews({ interviews }) {
+  const format = useFormat();
   if (interviews.length === 0) return null;
 
   return (
@@ -133,10 +129,10 @@ function UpcomingInterviews({ interviews }) {
                   {interview.job?.title} · {interview.company?.name}
                 </p>
                 <p className="text-ink-600 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-                  <span>{formatDateTime(interview.scheduledFor)}</span>
+                  <span>{format.dateTime(interview.scheduledFor)}</span>
                   <span className="inline-flex items-center gap-1">
                     <Icon className="size-3.5" aria-hidden="true" />
-                    {INTERVIEW_LOCATION_LABELS[interview.locationType]} · {interview.durationMins} min
+                    {format.interviewFormat(interview.locationType)} · {interview.durationMins} min
                   </span>
                 </p>
                 {interview.notes && (
@@ -186,6 +182,7 @@ function ApplicationSummary({ meta, applications }) {
 }
 
 function ApplicationRow({ application, onWithdraw, withdrawing }) {
+  const format = useFormat();
   const { job, stage, status } = application;
   const withdrawn = status === 'withdrawn';
   const decided = ['hired', 'rejected'].includes(stage);
@@ -211,7 +208,7 @@ function ApplicationRow({ application, onWithdraw, withdrawing }) {
               )}
             </h2>
             <p className="text-ink-500 mt-0.5 text-sm">
-              {job?.company?.name} · applied {formatRelative(application.createdAt)}
+              {job?.company?.name} · applied {format.relative(application.createdAt)}
             </p>
           </div>
         </div>
@@ -220,7 +217,7 @@ function ApplicationRow({ application, onWithdraw, withdrawing }) {
           {withdrawn ? (
             <Badge tone="neutral">Withdrawn</Badge>
           ) : (
-            <Badge tone={STAGE_TONES[stage]}>{STAGE_LABELS[stage]}</Badge>
+            <Badge tone={STAGE_TONES[stage]}>{format.stage(stage)}</Badge>
           )}
 
           {!withdrawn && !decided && (
@@ -238,6 +235,7 @@ function ApplicationRow({ application, onWithdraw, withdrawing }) {
 
 /* Rejections are terminal, so the ladder is replaced rather than shown greyed. */
 function StageTrack({ stage }) {
+  const format = useFormat();
   if (stage === 'rejected') {
     return (
       <p className="text-ink-500 mt-4 text-sm">
@@ -250,7 +248,7 @@ function StageTrack({ stage }) {
   const currentIndex = track.indexOf(stage);
 
   return (
-    <ol className="mt-5 flex gap-1.5" aria-label={`Current stage: ${STAGE_LABELS[stage]}`}>
+    <ol className="mt-5 flex gap-1.5" aria-label={`Current stage: ${format.stage(stage)}`}>
       {track.map((item, index) => (
         <li key={item} className="flex-1">
           <span
@@ -265,7 +263,7 @@ function StageTrack({ stage }) {
               index === currentIndex ? 'text-ink-900 font-medium' : 'text-ink-400'
             )}
           >
-            {STAGE_LABELS[item]}
+            {format.stage(item)}
           </span>
         </li>
       ))}

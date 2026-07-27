@@ -36,6 +36,8 @@ const userSchema = new mongoose.Schema(
     },
     passwordHash: { type: String, required: true, select: false },
     role: { type: String, enum: USER_ROLES, default: 'candidate', index: true },
+    // Drives the language of notifications and email, so they match the site.
+    locale: { type: String, enum: ['en', 'ar'], default: 'en' },
     avatarUrl: { type: String, trim: true },
     company: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', default: null, index: true },
     profile: { type: profileSchema, default: () => ({}) },

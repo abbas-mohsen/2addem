@@ -74,12 +74,12 @@ export function LandingPage() {
             >
               <div className="relative flex-1">
                 <Search
-                  className="text-ink-400 pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2"
+                  className="text-ink-400 pointer-events-none absolute top-1/2 start-3.5 size-4 -translate-y-1/2"
                   aria-hidden="true"
                 />
                 <Input
                   type="search"
-                  className="h-12 pl-10"
+                  className="h-12 ps-10"
                   placeholder="Try “React”, “product designer”, “Beirut”…"
                   aria-label="Search jobs"
                   value={term}

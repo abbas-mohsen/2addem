@@ -10,7 +10,7 @@ export function Field({ label, error, hint, required, children, className }) {
       {label && (
         <label htmlFor={id} className="text-ink-800 block text-sm font-medium">
           {label}
-          {required && <span className="text-brand-600 ml-0.5">*</span>}
+          {required && <span className="text-brand-600 ms-0.5">*</span>}
         </label>
       )}
 
@@ -46,7 +46,7 @@ export function Textarea({ className, error, rows = 5, ...props }) {
 
 export function Select({ className, error, children, ...props }) {
   return (
-    <select className={cn('field-input pr-9', error && 'border-red-400', className)} {...props}>
+    <select className={cn('field-input pe-9', error && 'border-red-400', className)} {...props}>
       {children}
     </select>
   );

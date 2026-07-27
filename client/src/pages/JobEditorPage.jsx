@@ -9,7 +9,9 @@ import { Button } from '../components/ui/Button.jsx';
 import { Field, Input, Select, Textarea } from '../components/ui/Field.jsx';
 import { ErrorState } from '../components/ui/States.jsx';
 import { FormSkeleton, PageHeaderSkeleton } from '../components/ui/Skeletons.jsx';
-import { EMPLOYMENT_LABELS, REMOTE_LABELS } from '../lib/format.js';
+
+import { EMPLOYMENT_TYPES, REMOTE_TYPES } from '../lib/format.js';
+import { useFormat } from '../hooks/useFormat.js';
 import { useLocationSuggestions } from '../hooks/useLocationSuggestions.js';
 
 const BLANK = {
@@ -119,6 +121,7 @@ function JobForm({ jobId, job }) {
   const [submitError, setSubmitError] = useState(null);
   const [draftNotice, setDraftNotice] = useState(null);
   const { data: locations = [] } = useLocationSuggestions();
+  const format = useFormat();
 
   const aiDraft = useMutation({
     mutationFn: jobsApi.aiDraft,
@@ -234,7 +237,7 @@ function JobForm({ jobId, job }) {
                 <p className="text-ink-800 flex items-center gap-1.5 text-sm font-medium">
                   <FlaskConical className="text-ink-400 size-4" aria-hidden="true" />
                   Draft builder
-                  <span className="bg-ink-200 text-ink-600 ml-1 rounded px-1.5 py-0.5 text-[10px] font-semibold tracking-wide uppercase">
+                  <span className="bg-ink-200 text-ink-600 ms-1 rounded px-1.5 py-0.5 text-[10px] font-semibold tracking-wide uppercase">
                     Stub
                   </span>
                 </p>
@@ -337,9 +340,9 @@ function JobForm({ jobId, job }) {
             <Field label="Work model">
               {(props) => (
                 <Select {...props} value={form.remote} onChange={update('remote')}>
-                  {Object.entries(REMOTE_LABELS).map(([value, label]) => (
+                  {REMOTE_TYPES.map((value) => (
                     <option key={value} value={value}>
-                      {label}
+                      {format.remote(value)}
                     </option>
                   ))}
                 </Select>
@@ -349,9 +352,9 @@ function JobForm({ jobId, job }) {
             <Field label="Employment type">
               {(props) => (
                 <Select {...props} value={form.employmentType} onChange={update('employmentType')}>
-                  {Object.entries(EMPLOYMENT_LABELS).map(([value, label]) => (
+                  {EMPLOYMENT_TYPES.map((value) => (
                     <option key={value} value={value}>
-                      {label}
+                      {format.employment(value)}
                     </option>
                   ))}
                 </Select>

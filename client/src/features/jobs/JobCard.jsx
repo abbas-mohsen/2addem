@@ -3,15 +3,13 @@ import { Banknote, MapPin } from 'lucide-react';
 import { Badge } from '../../components/ui/Badge.jsx';
 import { Skeleton } from '../../components/ui/States.jsx';
 import { CompanyLogo } from '../../components/ui/Logo.jsx';
-import {
-  EMPLOYMENT_LABELS,
-  REMOTE_LABELS,
-  formatRelative,
-  formatSalary,
-} from '../../lib/format.js';
+import { useFormat } from '../../hooks/useFormat.js';
+import { useT } from '../../i18n/index.jsx';
 
 export function JobCard({ job }) {
-  const salary = formatSalary(job);
+  const format = useFormat();
+  const t = useT();
+  const salary = format.salary(job);
 
   return (
     <article className="border-ink-200 rounded-card shadow-card hover:shadow-lift group relative border bg-white p-5 transition-shadow">
@@ -30,7 +28,7 @@ export function JobCard({ job }) {
           <div className="text-ink-500 mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm">
             <span className="inline-flex items-center gap-1.5">
               <MapPin className="size-3.5" aria-hidden="true" />
-              {job.location || REMOTE_LABELS[job.remote]}
+              {job.location || format.remote(job.remote)}
             </span>
             {salary && (
               <span className="inline-flex items-center gap-1.5">
@@ -41,9 +39,9 @@ export function JobCard({ job }) {
           </div>
 
           <div className="mt-3.5 flex flex-wrap items-center gap-2">
-            <Badge tone="brand">{REMOTE_LABELS[job.remote]}</Badge>
-            {job.remoteAbroad && <Badge tone="success">Remote · paid from abroad</Badge>}
-            <Badge tone="outline">{EMPLOYMENT_LABELS[job.employmentType]}</Badge>
+            <Badge tone="brand">{format.remote(job.remote)}</Badge>
+            {job.remoteAbroad && <Badge tone="success">{t('jobs.remoteAbroadBadge')}</Badge>}
+            <Badge tone="outline">{format.employment(job.employmentType)}</Badge>
             {job.skills?.slice(0, 3).map((skill) => (
               <Badge key={skill}>{skill}</Badge>
             ))}
@@ -54,7 +52,7 @@ export function JobCard({ job }) {
           className="text-ink-400 hidden shrink-0 text-xs sm:block"
           dateTime={job.publishedAt ?? job.createdAt}
         >
-          {formatRelative(job.publishedAt ?? job.createdAt)}
+          {format.relative(job.publishedAt ?? job.createdAt)}
         </time>
       </div>
     </article>

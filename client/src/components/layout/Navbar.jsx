@@ -3,33 +3,36 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { LogOut, Menu, X } from 'lucide-react';
 import { useAuthStore } from '../../context/authStore.js';
 import { initials } from '../../lib/format.js';
+import { useT } from '../../i18n/index.jsx';
 import { Button } from '../ui/Button.jsx';
 import { Skeleton } from '../ui/States.jsx';
 import { Logo } from '../ui/Logo.jsx';
+import { LanguageSwitcher } from './LanguageSwitcher.jsx';
 import { NotificationBell } from '../../features/notifications/NotificationBell.jsx';
 import { cn } from '../../lib/cn.js';
 
 const LINKS_BY_ROLE = {
-  anonymous: [{ to: '/jobs', label: 'Browse jobs' }],
+  anonymous: [{ to: '/jobs', key: 'nav.browseJobs' }],
   candidate: [
-    { to: '/jobs', label: 'Browse jobs' },
-    { to: '/applications', label: 'My applications' },
+    { to: '/jobs', key: 'nav.browseJobs' },
+    { to: '/applications', key: 'nav.myApplications' },
   ],
   recruiter: [
-    { to: '/recruiter', label: 'Dashboard', end: true },
-    { to: '/recruiter/jobs', label: 'Jobs' },
-    { to: '/recruiter/talent', label: 'Talent' },
-    { to: '/recruiter/company', label: 'Company' },
+    { to: '/recruiter', key: 'nav.dashboard', end: true },
+    { to: '/recruiter/jobs', key: 'nav.jobs' },
+    { to: '/recruiter/talent', key: 'nav.talent' },
+    { to: '/recruiter/company', key: 'nav.company' },
   ],
   admin: [
-    { to: '/admin', label: 'Moderation' },
-    { to: '/jobs', label: 'Job board' },
+    { to: '/admin', key: 'nav.moderation' },
+    { to: '/jobs', key: 'nav.jobBoard' },
   ],
 };
 
 export function Navbar() {
   const { user, status, signOut } = useAuthStore();
   const navigate = useNavigate();
+  const t = useT();
   const [menuOpen, setMenuOpen] = useState(false);
 
   // Until the session has been resolved we know neither state, so showing the
@@ -57,13 +60,15 @@ export function Navbar() {
           <nav className="hidden items-center gap-1 md:flex">
             {links.map((link) => (
               <NavLink key={link.to} to={link.to} end={link.end} className={linkClass}>
-                {link.label}
+                {t(link.key)}
               </NavLink>
             ))}
           </nav>
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
+          <LanguageSwitcher />
+
           {resolving ? (
             <Skeleton className="h-8 w-32 rounded-lg" />
           ) : user ? (
@@ -78,23 +83,23 @@ export function Navbar() {
                 </span>
                 <div className="leading-tight">
                   <p className="text-ink-900 text-sm font-medium">{user.name}</p>
-                  <p className="text-ink-500 text-xs capitalize">
-                    {user.company?.name ?? user.role}
+                  <p className="text-ink-500 text-xs">
+                    {user.company?.name ?? t(`roles.${user.role}`)}
                   </p>
                 </div>
               </div>
               <Button variant="ghost" size="sm" onClick={handleSignOut}>
                 <LogOut className="size-4" aria-hidden="true" />
-                Sign out
+                {t('nav.signOut')}
               </Button>
             </>
           ) : (
             <>
               <Button variant="ghost" size="sm" to="/login">
-                Sign in
+                {t('nav.signIn')}
               </Button>
               <Button size="sm" to="/register">
-                Get started
+                {t('nav.getStarted')}
               </Button>
             </>
           )}
@@ -104,8 +109,8 @@ export function Navbar() {
           {user && <NotificationBell />}
           <button
             type="button"
-            className="text-ink-700 -mr-2 p-2"
-            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            className="text-ink-700 -me-2 p-2"
+            aria-label={menuOpen ? t('nav.closeMenu') : t('nav.openMenu')}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((open) => !open)}
           >
@@ -124,30 +129,32 @@ export function Navbar() {
               className={linkClass}
               onClick={() => setMenuOpen(false)}
             >
-              <span className="block">{link.label}</span>
+              <span className="block">{t(link.key)}</span>
             </NavLink>
           ))}
 
           <div className="border-ink-200 mt-2 flex flex-col gap-2 border-t pt-3">
+            <LanguageSwitcher className="px-1" />
+
             {resolving ? (
               <Skeleton className="h-9 rounded-lg" />
             ) : user ? (
               <>
                 <p className="text-ink-500 px-3 text-sm">
-                  Signed in as <span className="text-ink-800 font-medium">{user.name}</span>
+                  {t('nav.signedInAs', { name: user.name })}
                 </p>
                 <Button variant="outline" size="sm" onClick={handleSignOut}>
                   <LogOut className="size-4" aria-hidden="true" />
-                  Sign out
+                  {t('nav.signOut')}
                 </Button>
               </>
             ) : (
               <>
                 <Button variant="outline" size="sm" to="/login" onClick={() => setMenuOpen(false)}>
-                  Sign in
+                  {t('nav.signIn')}
                 </Button>
                 <Button size="sm" to="/register" onClick={() => setMenuOpen(false)}>
-                  Get started
+                  {t('nav.getStarted')}
                 </Button>
               </>
             )}

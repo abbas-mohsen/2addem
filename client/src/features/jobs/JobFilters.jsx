@@ -1,11 +1,15 @@
 import { Search, X } from 'lucide-react';
 import { Button } from '../../components/ui/Button.jsx';
 import { Input, Select } from '../../components/ui/Field.jsx';
-import { EMPLOYMENT_LABELS, REMOTE_LABELS } from '../../lib/format.js';
+import { EMPLOYMENT_TYPES, REMOTE_TYPES } from '../../lib/format.js';
+import { useFormat } from '../../hooks/useFormat.js';
+import { useT } from '../../i18n/index.jsx';
 import { useLocationSuggestions } from '../../hooks/useLocationSuggestions.js';
 
 export function JobFilters({ draft, onDraftChange, onSubmit, onReset, activeCount }) {
   const set = (key) => (event) => onDraftChange({ ...draft, [key]: event.target.value });
+  const t = useT();
+  const format = useFormat();
   const { data: locations = [] } = useLocationSuggestions();
 
   return (
@@ -19,14 +23,14 @@ export function JobFilters({ draft, onDraftChange, onSubmit, onReset, activeCoun
       <div className="grid gap-3 md:grid-cols-[1.4fr_1fr_auto]">
         <div className="relative">
           <Search
-            className="text-ink-400 pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
+            className="text-ink-400 pointer-events-none absolute top-1/2 start-3 size-4 -translate-y-1/2"
             aria-hidden="true"
           />
           <Input
             type="search"
-            className="pl-9"
-            placeholder="Job title, skill or keyword"
-            aria-label="Search jobs"
+            className="ps-9"
+            placeholder={t('jobs.searchPlaceholder')}
+            aria-label={t('landing.searchJobs')}
             value={draft.q}
             onChange={set('q')}
           />
@@ -36,8 +40,8 @@ export function JobFilters({ draft, onDraftChange, onSubmit, onReset, activeCoun
           <Input
             type="search"
             list="location-suggestions"
-            placeholder="City or governorate"
-            aria-label="Location"
+            placeholder={t('jobs.locationPlaceholder')}
+            aria-label={t('editor.location')}
             value={draft.location}
             onChange={set('location')}
           />
@@ -49,29 +53,29 @@ export function JobFilters({ draft, onDraftChange, onSubmit, onReset, activeCoun
         </>
 
         <Button type="submit" className="md:w-auto">
-          Search
+          {t('common.search')}
         </Button>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Select aria-label="Work model" value={draft.remote} onChange={set('remote')}>
-          <option value="">Any work model</option>
-          {Object.entries(REMOTE_LABELS).map(([value, label]) => (
+        <Select aria-label={t('editor.workModel')} value={draft.remote} onChange={set('remote')}>
+          <option value="">{t('jobs.anyWorkModel')}</option>
+          {REMOTE_TYPES.map((value) => (
             <option key={value} value={value}>
-              {label}
+              {format.remote(value)}
             </option>
           ))}
         </Select>
 
         <Select
-          aria-label="Employment type"
+          aria-label={t('editor.employmentType')}
           value={draft.employmentType}
           onChange={set('employmentType')}
         >
-          <option value="">Any employment type</option>
-          {Object.entries(EMPLOYMENT_LABELS).map(([value, label]) => (
+          <option value="">{t('jobs.anyEmploymentType')}</option>
+          {EMPLOYMENT_TYPES.map((value) => (
             <option key={value} value={value}>
-              {label}
+              {format.employment(value)}
             </option>
           ))}
         </Select>
@@ -80,16 +84,16 @@ export function JobFilters({ draft, onDraftChange, onSubmit, onReset, activeCoun
           type="number"
           min="0"
           step="any"
-          placeholder="Minimum salary"
-          aria-label="Minimum salary"
+          placeholder={t('jobs.minimumSalary')}
+          aria-label={t('jobs.minimumSalary')}
           value={draft.salaryMin}
           onChange={set('salaryMin')}
         />
 
-        <Select aria-label="Sort by" value={draft.sort} onChange={set('sort')}>
-          <option value="newest">Newest first</option>
-          <option value="oldest">Oldest first</option>
-          <option value="salary">Highest salary</option>
+        <Select aria-label={t('jobs.sortBy')} value={draft.sort} onChange={set('sort')}>
+          <option value="newest">{t('jobs.sortNewest')}</option>
+          <option value="oldest">{t('jobs.sortOldest')}</option>
+          <option value="salary">{t('jobs.sortSalary')}</option>
         </Select>
       </div>
 
@@ -104,13 +108,13 @@ export function JobFilters({ draft, onDraftChange, onSubmit, onReset, activeCoun
               onDraftChange({ ...draft, remoteAbroad: event.target.checked ? 'true' : '' })
             }
           />
-          Remote for a company abroad
+          {t('jobs.remoteAbroad')}
         </label>
 
         {activeCount > 0 && (
           <Button type="button" variant="ghost" size="sm" onClick={onReset}>
             <X className="size-4" aria-hidden="true" />
-            Clear {activeCount} filter{activeCount === 1 ? '' : 's'}
+            {t('jobs.clearFilters', { count: activeCount })}
           </Button>
         )}
       </div>

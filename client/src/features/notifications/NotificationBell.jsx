@@ -5,7 +5,8 @@ import { Bell, CalendarClock, CheckCheck, FileText, ShieldAlert, TrendingUp } fr
 import { notificationsApi } from '../../api/endpoints.js';
 import { errorMessage } from '../../api/client.js';
 import { Skeleton, SkeletonGroup } from '../../components/ui/States.jsx';
-import { formatRelative } from '../../lib/format.js';
+import { useI18n } from '../../i18n/index.jsx';
+import { useFormat } from '../../hooks/useFormat.js';
 import { cn } from '../../lib/cn.js';
 
 const ICONS = {
@@ -22,6 +23,24 @@ export function NotificationBell() {
   const containerRef = useRef(null);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { t } = useI18n();
+  const format = useFormat();
+
+  /* Notifications are stored as a type plus parameters, so they render in
+     whichever language the reader has picked. The stored English `message` is
+     the fallback for rows written before that, or an unknown type. */
+  const describe = (notification) => {
+    const key = `notifications.types.${notification.type}`;
+    const params = notification.params ?? {};
+
+    if (!params || Object.keys(params).length === 0) return notification.message;
+
+    return t(key, {
+      ...params,
+      ...(params.stage ? { stage: format.stage(params.stage) } : {}),
+      ...(params.scheduledFor ? { when: format.dateTime(params.scheduledFor) } : {}),
+    });
+  };
 
   const query = useQuery({
     queryKey: ['notifications'],
@@ -72,13 +91,15 @@ export function NotificationBell() {
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'}
+        aria-label={
+          unread > 0 ? t('notifications.labelUnread', { count: unread }) : t('notifications.label')
+        }
         aria-expanded={open}
         className="text-ink-500 hover:bg-ink-100 hover:text-ink-900 relative rounded-lg p-2 transition-colors"
       >
         <Bell className="size-5" />
         {unread > 0 && (
-          <span className="bg-brand-600 absolute top-1 right-1 flex size-4 items-center justify-center rounded-full text-[10px] font-semibold text-white tabular-nums">
+          <span className="bg-brand-600 absolute top-1 end-1 flex size-4 items-center justify-center rounded-full text-[10px] font-semibold text-white tabular-nums">
             {unread > 9 ? '9+' : unread}
           </span>
         )}
@@ -87,11 +108,11 @@ export function NotificationBell() {
       {open && (
         <div
           role="dialog"
-          aria-label="Notifications"
-          className="border-ink-200 rounded-card shadow-lift absolute right-0 z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] border bg-white"
+          aria-label={t('notifications.label')}
+          className="border-ink-200 rounded-card shadow-lift absolute end-0 z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] border bg-white"
         >
           <header className="border-ink-200 flex items-center justify-between border-b px-4 py-3">
-            <h2 className="text-sm font-semibold">Notifications</h2>
+            <h2 className="text-sm font-semibold">{t('notifications.title')}</h2>
             {unread > 0 && (
               <button
                 type="button"
@@ -99,14 +120,14 @@ export function NotificationBell() {
                 className="text-brand-700 inline-flex items-center gap-1 text-xs font-medium hover:underline"
               >
                 <CheckCheck className="size-3.5" aria-hidden="true" />
-                Mark all read
+                {t('notifications.markAllRead')}
               </button>
             )}
           </header>
 
           <div className="max-h-96 overflow-y-auto">
             {query.isPending && (
-              <SkeletonGroup label="Loading notifications…">
+              <SkeletonGroup label={t('common.loading')}>
                 {Array.from({ length: 3 }, (_, index) => (
                   <div key={index} className="flex gap-3 px-4 py-3">
                     <Skeleton className="size-7 shrink-0 rounded-full" />
@@ -127,7 +148,7 @@ export function NotificationBell() {
 
             {query.isSuccess && items.length === 0 && (
               <p className="text-ink-500 px-4 py-8 text-center text-sm">
-                Nothing yet. Updates on your applications will show up here.
+                {t('notifications.empty')}
               </p>
             )}
 
@@ -140,7 +161,7 @@ export function NotificationBell() {
                       type="button"
                       onClick={() => openNotification(notification)}
                       className={cn(
-                        'hover:bg-ink-50 flex w-full gap-3 px-4 py-3 text-left transition-colors',
+                        'hover:bg-ink-50 flex w-full gap-3 px-4 py-3 text-start transition-colors',
                         !notification.read && 'bg-brand-50/50'
                       )}
                     >
@@ -159,10 +180,10 @@ export function NotificationBell() {
                             notification.read ? 'text-ink-600' : 'text-ink-900 font-medium'
                           )}
                         >
-                          {notification.message}
+                          {describe(notification)}
                         </span>
                         <span className="text-ink-400 mt-0.5 block text-xs">
-                          {formatRelative(notification.createdAt)}
+                          {format.relative(notification.createdAt)}
                         </span>
                       </span>
                       {!notification.read && (
