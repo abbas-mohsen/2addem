@@ -40,7 +40,7 @@ function normalize(error) {
   return new ApiError(500, 'Something went wrong on our side');
 }
 
-// eslint-disable-next-line no-unused-vars -- Express identifies error middleware by arity.
+// The unused fourth parameter is required: Express identifies error middleware by arity.
 export function errorHandler(error, req, res, _next) {
   const apiError = normalize(error);
 

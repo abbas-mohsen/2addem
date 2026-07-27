@@ -1,0 +1,78 @@
+@import 'tailwindcss';
+
+/* Design tokens — one accent (brand violet) against warm neutrals, so colour
+   only ever means "act here". Everything else is type and spacing. */
+@theme {
+  --color-brand-50: #f1f0ff;
+  --color-brand-100: #e5e3ff;
+  --color-brand-200: #cdc9ff;
+  --color-brand-300: #ada5ff;
+  --color-brand-400: #8a7dff;
+  --color-brand-500: #6c5cff;
+  --color-brand-600: #5b45f0;
+  --color-brand-700: #4a34cc;
+  --color-brand-800: #3d2ca6;
+  --color-brand-900: #332884;
+
+  --color-ink-50: #f8f8f7;
+  --color-ink-100: #f0efed;
+  --color-ink-200: #e3e1de;
+  --color-ink-300: #c9c6c1;
+  --color-ink-400: #a09b94;
+  --color-ink-500: #78736c;
+  --color-ink-600: #5a5650;
+  --color-ink-700: #423e39;
+  --color-ink-800: #2b2825;
+  --color-ink-900: #1a1817;
+
+  --color-canvas: #fbfaf9;
+
+  --font-sans:
+    'Inter var', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+    sans-serif;
+
+  --text-display: 3.25rem;
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.03em;
+  --text-title: 2rem;
+  --text-title--line-height: 1.15;
+  --text-title--letter-spacing: -0.02em;
+
+  --radius-card: 0.875rem;
+
+  --shadow-card: 0 1px 2px rgb(26 24 23 / 0.04), 0 1px 3px rgb(26 24 23 / 0.06);
+  --shadow-lift: 0 8px 24px -6px rgb(26 24 23 / 0.12), 0 2px 6px rgb(26 24 23 / 0.06);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-canvas text-ink-800 font-sans antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply text-ink-900 font-semibold tracking-tight;
+  }
+
+  /* One consistent focus treatment across links, buttons and inputs. */
+  :focus-visible {
+    @apply outline-brand-500 outline-2 outline-offset-2;
+  }
+}
+
+@layer components {
+  .field-input {
+    @apply border-ink-200 text-ink-900 placeholder:text-ink-400 focus:border-brand-500 focus:ring-brand-100 w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm transition focus:ring-4 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60;
+  }
+}
+
+/* Content rendered from plain-text job descriptions keeps its line breaks. */
+.prose-plain {
+  @apply text-ink-700 leading-relaxed whitespace-pre-line;
+}
