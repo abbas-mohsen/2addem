@@ -1,7 +1,14 @@
 import mongoose from 'mongoose';
 import { Application } from '../models/Application.js';
 import { Job } from '../models/Job.js';
+import { User } from '../models/User.js';
+import { Company } from '../models/Company.js';
 import { ApiError } from '../utils/ApiError.js';
+import {
+  applicationReceivedEmail,
+  newApplicantEmail,
+  stageChangedEmail,
+} from './email.service.js';
 
 const CANDIDATE_CARD_FIELDS = 'name email avatarUrl profile.headline profile.location profile.skills';
 
@@ -100,4 +107,28 @@ export function populateApplication(application) {
     { path: 'candidate', select: CANDIDATE_CARD_FIELDS },
     { path: 'notes.author', select: 'name avatarUrl' },
   ]);
+}
+
+/* Notifications are deliberately not awaited by callers: a mail outage must
+   never turn a successful application into a failed request. */
+export async function notifyNewApplication({ job, candidate }) {
+  const company = job.company?.name ? job.company : await Company.findById(job.company).lean();
+  if (!company) return;
+
+  applicationReceivedEmail({ candidate, job, company });
+
+  const recruiter = await User.findById(job.createdBy).select('email name').lean();
+  if (recruiter) newApplicantEmail({ recruiter, candidate, job });
+}
+
+export async function notifyStageChange(application) {
+  const [candidate, job] = await Promise.all([
+    User.findById(application.candidate).select('email name').lean(),
+    Job.findById(application.job).select('title').lean(),
+  ]);
+  const company = await Company.findById(application.company).select('name').lean();
+
+  if (!candidate || !job || !company) return;
+
+  stageChangedEmail({ candidate, job, company, stage: application.stage });
 }

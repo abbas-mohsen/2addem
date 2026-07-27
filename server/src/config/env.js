@@ -19,6 +19,17 @@ const schema = z.object({
   STORAGE_DRIVER: z.enum(['local']).default('local'),
   UPLOAD_DIR: z.string().default('uploads'),
   MAX_UPLOAD_MB: z.coerce.number().positive().default(5),
+
+  // Leave SMTP_HOST empty in development to fall back to an Ethereal test inbox.
+  EMAIL_ENABLED: z
+    .enum(['true', 'false'])
+    .default('true')
+    .transform((value) => value === 'true'),
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().int().positive().default(587),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  MAIL_FROM: z.string().default('2addem <no-reply@2addem.local>'),
 });
 
 const parsed = schema.safeParse(process.env);

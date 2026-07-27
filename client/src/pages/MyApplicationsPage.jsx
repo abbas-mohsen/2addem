@@ -43,6 +43,8 @@ export function MyApplicationsPage() {
         }
       />
 
+      {query.isSuccess && applications.length > 0 && <ApplicationSummary meta={query.data.meta} applications={applications} />}
+
       {justApplied && (
         <p className="mt-6 flex items-center gap-2 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
           <CheckCircle2 className="size-4 shrink-0" aria-hidden="true" />
@@ -87,6 +89,31 @@ export function MyApplicationsPage() {
         />
       </div>
     </Container>
+  );
+}
+
+/* Counts come from the current page rather than a dedicated endpoint — a
+   candidate's list is small, and it keeps the dashboard to one request. */
+function ApplicationSummary({ meta, applications }) {
+  const active = applications.filter((a) => a.status === 'active');
+  const inProgress = active.filter((a) => ['screening', 'interview', 'offer'].includes(a.stage));
+  const decided = active.filter((a) => ['hired', 'rejected'].includes(a.stage));
+
+  const tiles = [
+    { label: 'Applications', value: meta?.total ?? applications.length },
+    { label: 'In progress', value: inProgress.length },
+    { label: 'Decided', value: decided.length },
+  ];
+
+  return (
+    <dl className="mt-6 grid gap-4 sm:grid-cols-3">
+      {tiles.map((tile) => (
+        <div key={tile.label} className="border-ink-200 rounded-card border bg-white p-5">
+          <dt className="text-ink-500 text-sm">{tile.label}</dt>
+          <dd className="text-ink-900 mt-1 text-2xl font-semibold tabular-nums">{tile.value}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 

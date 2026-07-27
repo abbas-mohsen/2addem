@@ -15,8 +15,16 @@ export function AppLayout() {
   );
 }
 
-export function Container({ className, children }) {
-  return <div className={cn('mx-auto w-full max-w-6xl px-4 sm:px-6', className)}>{children}</div>;
+/* `wide` is for the pipeline board, where six columns need more room than the
+   reading-width container gives. */
+export function Container({ wide = false, className, children }) {
+  return (
+    <div
+      className={cn('mx-auto w-full px-4 sm:px-6', wide ? 'max-w-[104rem]' : 'max-w-6xl', className)}
+    >
+      {children}
+    </div>
+  );
 }
 
 export function PageHeader({ title, description, actions, className }) {

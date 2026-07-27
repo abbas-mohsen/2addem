@@ -14,12 +14,14 @@ const LINKS_BY_ROLE = {
     { to: '/applications', label: 'My applications' },
   ],
   recruiter: [
+    { to: '/recruiter', label: 'Dashboard', end: true },
     { to: '/recruiter/jobs', label: 'Jobs' },
-    { to: '/jobs', label: 'Job board' },
+    { to: '/recruiter/company', label: 'Company' },
   ],
   admin: [
+    { to: '/recruiter', label: 'Dashboard', end: true },
     { to: '/recruiter/jobs', label: 'Jobs' },
-    { to: '/jobs', label: 'Job board' },
+    { to: '/recruiter/company', label: 'Company' },
   ],
 };
 
@@ -52,7 +54,7 @@ export function Navbar() {
           <Logo />
           <nav className="hidden items-center gap-1 md:flex">
             {links.map((link) => (
-              <NavLink key={link.to} to={link.to} className={linkClass}>
+              <NavLink key={link.to} to={link.to} end={link.end} className={linkClass}>
                 {link.label}
               </NavLink>
             ))}
@@ -112,6 +114,7 @@ export function Navbar() {
             <NavLink
               key={link.to}
               to={link.to}
+              end={link.end}
               className={linkClass}
               onClick={() => setMenuOpen(false)}
             >

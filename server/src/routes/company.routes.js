@@ -9,6 +9,7 @@ const router = Router();
 const recruiterOnly = [requireAuth, requireRole('recruiter', 'admin')];
 
 router.get('/mine', ...recruiterOnly, companyController.getMyCompany);
+router.get('/mine/stats', ...recruiterOnly, companyController.getMyStats);
 router.post(
   '/',
   ...recruiterOnly,

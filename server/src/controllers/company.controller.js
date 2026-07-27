@@ -4,6 +4,7 @@ import { ApiError } from '../utils/ApiError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { sendData } from '../utils/respond.js';
 import { uniqueSlug } from '../utils/slug.js';
+import { getCompanyStats } from '../services/stats.service.js';
 
 export const getCompanyBySlug = asyncHandler(async (req, res) => {
   const company = await Company.findOne({ slug: req.params.slug.toLowerCase() });
@@ -34,6 +35,12 @@ export const createCompany = asyncHandler(async (req, res) => {
   await req.user.save();
 
   sendData(res, { company }, 201);
+});
+
+export const getMyStats = asyncHandler(async (req, res) => {
+  if (!req.user.company) throw ApiError.badRequest('You do not have a company profile yet');
+
+  sendData(res, { stats: await getCompanyStats(req.user.company) });
 });
 
 export const updateMyCompany = asyncHandler(async (req, res) => {

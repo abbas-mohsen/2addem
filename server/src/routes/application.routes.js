@@ -29,6 +29,8 @@ router.patch(
 
 const recruiterOnly = requireRole('recruiter', 'admin');
 
+router.get('/:id', recruiterOnly, applicationController.getApplication);
+
 router.patch(
   '/:id/stage',
   recruiterOnly,

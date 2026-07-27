@@ -1,4 +1,4 @@
-import { Link, useSearchParams } from 'react-router-dom';
+﻿import { Link, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Eye, PenLine, Plus, Users } from 'lucide-react';
 import { jobsApi } from '../api/endpoints.js';
@@ -150,7 +150,7 @@ function JobRow({ job, onStatusChange, updating }) {
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2.5">
             <h2 className="text-base font-semibold">
-              <Link to={`/recruiter/jobs/${job._id}/applicants`} className="hover:text-brand-700">
+              <Link to={`/recruiter/jobs/${job._id}/pipeline`} className="hover:text-brand-700">
                 {job.title}
               </Link>
             </h2>
@@ -179,8 +179,8 @@ function JobRow({ job, onStatusChange, updating }) {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" to={`/recruiter/jobs/${job._id}/applicants`}>
-            Applicants
+          <Button variant="outline" size="sm" to={`/recruiter/jobs/${job._id}/pipeline`}>
+            Pipeline
           </Button>
           <Button variant="outline" size="sm" to={`/recruiter/jobs/${job._id}/edit`}>
             <PenLine className="size-4" aria-hidden="true" />

@@ -7,18 +7,19 @@ The name is the Levantine imperative **قدّم** — *"apply"* — written the 
 it, with `2` standing in for the glottal ق. The mark is that `2` with its base stroke running out
 into an arrow; the root ق-د-م means *to step forward*.
 
-> Status: **Phase 1 complete** — the app runs end to end. Phase 2 (kanban ATS, dashboards, email)
-> and Phase 3 (interviews, admin, seed data) are not built yet. See [Roadmap](#roadmap).
+> Status: **Phase 2 complete** — auth, job board, applications, a drag-and-drop ATS pipeline,
+> dashboards and email notifications all work end to end. Phase 3 (interviews, in-app
+> notifications, admin, seed data) is not built yet. See [Roadmap](#roadmap).
 
 ---
 
 ## Stack
 
-| Layer    | Choice                                                                    |
-| -------- | ------------------------------------------------------------------------- |
-| API      | Node + Express 5, ES modules, Mongoose 8, Zod validation, JWT, multer      |
-| Client   | React 19 + Vite 7, React Router 7, TanStack Query, Zustand, Tailwind CSS 4 |
-| Database | MongoDB                                                                   |
+| Layer    | Choice                                                                                |
+| -------- | ------------------------------------------------------------------------------------- |
+| API      | Node + Express 5, ES modules, Mongoose 8, Zod validation, JWT, multer, nodemailer       |
+| Client   | React 19 + Vite 7, React Router 7, TanStack Query, Zustand, Tailwind CSS 4, dnd-kit     |
+| Database | MongoDB                                                                                |
 
 ---
 
@@ -159,6 +160,26 @@ level rather than only in application code. Withdrawn and decided applications a
 further stage changes. Deleting a job that already has applicants closes it instead of destroying
 the candidates' records.
 
+### The pipeline
+
+Each job has a kanban board across the six stages. Cards drag between columns with `@dnd-kit`;
+the move is applied optimistically and rolled back if the server rejects it. Withdrawn candidates
+are not draggable, and every drag is announced in a live region for screen readers — the stage
+dropdown inside the applicant panel is the keyboard-and-mobile equivalent of dragging.
+
+Opening a card slides out a panel with the cover note, answers, resume, private team notes,
+tags and a 1–5 score.
+
+### Email
+
+Notifications go out on two events: a new application (to both the candidate and the recruiter)
+and a stage change (to the candidate). They are fire-and-forget — a mail outage logs an error but
+never fails the request that triggered it.
+
+In development with `SMTP_HOST` empty, the app creates an [Ethereal](https://ethereal.email)
+test inbox on the first send and logs a preview URL for each message. Nothing reaches a real
+address until you configure SMTP.
+
 ### File storage
 
 Resumes are written to `server/uploads` by multer with generated filenames — the client-supplied
@@ -198,25 +219,27 @@ All routes are under `/api`. Success responses are `{ success: true, data, meta?
 
 ### Applications
 
-| Method | Route                        | Access    | Notes                                    |
-| ------ | ---------------------------- | --------- | ---------------------------------------- |
-| POST   | `/jobs/:id/apply`            | candidate | `multipart/form-data` with `resume`      |
-| GET    | `/jobs/:id/applications`     | recruiter | Owner only                               |
-| GET    | `/applications/mine`         | candidate |                                          |
-| PATCH  | `/applications/:id/withdraw` | candidate | Own application only                     |
-| PATCH  | `/applications/:id/stage`    | recruiter |                                          |
-| POST   | `/applications/:id/notes`    | recruiter |                                          |
-| PATCH  | `/applications/:id/tags`     | recruiter |                                          |
-| PATCH  | `/applications/:id/score`    | recruiter | `0`–`5`, or `null` to clear              |
+| Method | Route                        | Access    | Notes                                       |
+| ------ | ---------------------------- | --------- | ------------------------------------------- |
+| POST   | `/jobs/:id/apply`            | candidate | `multipart/form-data` with `resume`         |
+| GET    | `/jobs/:id/applications`     | recruiter | Owner only; powers the pipeline board       |
+| GET    | `/applications/mine`         | candidate |                                             |
+| PATCH  | `/applications/:id/withdraw` | candidate | Own application only                        |
+| GET    | `/applications/:id`          | recruiter | Full detail with notes and their authors    |
+| PATCH  | `/applications/:id/stage`    | recruiter | Emails the candidate on a real transition   |
+| POST   | `/applications/:id/notes`    | recruiter |                                             |
+| PATCH  | `/applications/:id/tags`     | recruiter | Stored lowercase and deduplicated           |
+| PATCH  | `/applications/:id/score`    | recruiter | `0`–`5`, or `null` to clear                 |
 
 ### Companies
 
-| Method | Route             | Access    | Notes                     |
-| ------ | ----------------- | --------- | ------------------------- |
-| GET    | `/companies/:slug`| public    | Career page + open roles  |
-| GET    | `/companies/mine` | recruiter |                           |
-| POST   | `/companies`      | recruiter | For accounts without one  |
-| PATCH  | `/companies/mine` | recruiter |                           |
+| Method | Route                   | Access    | Notes                                        |
+| ------ | ----------------------- | --------- | -------------------------------------------- |
+| GET    | `/companies/:slug`      | public    | Career page + open roles                     |
+| GET    | `/companies/mine`       | recruiter |                                              |
+| GET    | `/companies/mine/stats` | recruiter | Dashboard counters, stage split, busiest jobs |
+| POST   | `/companies`            | recruiter | For accounts without one                     |
+| PATCH  | `/companies/mine`       | recruiter |                                              |
 
 ---
 
@@ -225,9 +248,12 @@ All routes are under `/api`. Success responses are `{ success: true, data, meta?
 There is no seed script yet (it is a Phase 3 task), so the fastest path is:
 
 1. Register as an employer at `/register?role=recruiter` — a company is created for you.
-2. Create a job and hit **Publish job**.
+2. Fill in **Company** so your career page is not empty, then create a job and **Publish job**.
 3. Sign out, register as a candidate, open the job from the board and apply with any PDF.
-4. Sign back in as the recruiter and open **Applicants** to move the candidate through stages.
+4. Sign back in as the recruiter. The dashboard shows the counters; **Jobs → Pipeline** opens the
+   board, where you can drag the candidate between stages and open their card for notes, tags and
+   a score.
+5. Watch the server log for Ethereal preview links — one per notification email.
 
 Sign-in and sign-up are rate limited, so many rapid account switches will start returning
 "Too many attempts" until the 15-minute window rolls over.
@@ -238,9 +264,12 @@ Sign-in and sign-up are rate limited, so many rapid account switches will start 
 
 - [x] **Phase 1** — auth and roles, job CRUD, public board with search, apply flow with resume
       upload, candidate application tracking, recruiter applicant list and stage changes
-- [ ] **Phase 2** — drag-and-drop kanban pipeline, notes/tags/scores in the UI, recruiter and
+- [x] **Phase 2** — drag-and-drop kanban pipeline, notes/tags/scores in the UI, recruiter and
       candidate dashboards, editable company profile, email notifications
 - [ ] **Phase 3** — interview scheduling, in-app notifications, admin moderation, talent pool,
       AI job-ad stub, seed script and a full responsive/polish pass
+
+Localization for the Lebanese market — structured cities, "fresh USD" salaries, a remote-for-abroad
+filter and Arabic/RTL — is deliberately deferred until after Phase 3.
 
 Explicitly out of scope: multiposting to external job boards, payments, and real AI generation.

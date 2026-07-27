@@ -29,11 +29,16 @@ export const applicationsApi = {
     api.post(`/jobs/${jobId}/apply`, formData, { onUploadProgress }).then(unwrap),
   mine: (params) => api.get('/applications/mine', { params }).then(unwrapList),
   withdraw: (id) => api.patch(`/applications/${id}/withdraw`).then(unwrap),
+  get: (id) => api.get(`/applications/${id}`).then(unwrap),
   setStage: ({ id, stage }) => api.patch(`/applications/${id}/stage`, { stage }).then(unwrap),
+  addNote: ({ id, body }) => api.post(`/applications/${id}/notes`, { body }).then(unwrap),
+  setTags: ({ id, tags }) => api.patch(`/applications/${id}/tags`, { tags }).then(unwrap),
+  setScore: ({ id, score }) => api.patch(`/applications/${id}/score`, { score }).then(unwrap),
 };
 
 export const companiesApi = {
   bySlug: (slug) => api.get(`/companies/${slug}`).then(unwrap),
   mine: () => api.get('/companies/mine').then(unwrap),
+  stats: () => api.get('/companies/mine/stats').then(unwrap),
   update: (payload) => api.patch('/companies/mine', payload).then(unwrap),
 };

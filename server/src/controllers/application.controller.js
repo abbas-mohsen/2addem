@@ -9,6 +9,8 @@ import {
   findApplicationForRecruiter,
   listCandidateApplications,
   listJobApplications,
+  notifyNewApplication,
+  notifyStageChange,
   populateApplication,
 } from '../services/application.service.js';
 
@@ -29,6 +31,8 @@ export const applyToJob = asyncHandler(async (req, res) => {
       resumeName: req.file.originalname,
       body: req.body,
     });
+
+    notifyNewApplication({ job, candidate: req.user });
 
     sendData(res, { application }, 201);
   } catch (error) {
@@ -72,6 +76,12 @@ export const listApplicationsForJob = asyncHandler(async (req, res) => {
   sendList(res, items, buildPageMeta({ page, limit, total }));
 });
 
+export const getApplication = asyncHandler(async (req, res) => {
+  const application = await findApplicationForRecruiter(req.params.id, req.user);
+
+  sendData(res, { application: await populateApplication(application) });
+});
+
 export const updateStage = asyncHandler(async (req, res) => {
   const application = await findApplicationForRecruiter(req.params.id, req.user);
 
@@ -79,8 +89,12 @@ export const updateStage = asyncHandler(async (req, res) => {
     throw ApiError.badRequest('This candidate withdrew their application');
   }
 
+  const previousStage = application.stage;
   application.stage = req.body.stage;
   await application.save();
+
+  // Only a real transition is worth an email.
+  if (previousStage !== application.stage) notifyStageChange(application);
 
   sendData(res, { application: await populateApplication(application) });
 });

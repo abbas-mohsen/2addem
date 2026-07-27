@@ -12,8 +12,10 @@ import { RegisterPage } from './pages/RegisterPage.jsx';
 import { ApplyPage } from './pages/ApplyPage.jsx';
 import { MyApplicationsPage } from './pages/MyApplicationsPage.jsx';
 import { RecruiterJobsPage } from './pages/RecruiterJobsPage.jsx';
+import { RecruiterDashboardPage } from './pages/RecruiterDashboardPage.jsx';
 import { JobEditorPage } from './pages/JobEditorPage.jsx';
-import { JobApplicantsPage } from './pages/JobApplicantsPage.jsx';
+import { JobPipelinePage } from './pages/JobPipelinePage.jsx';
+import { CompanyProfilePage } from './pages/CompanyProfilePage.jsx';
 import { NotFoundPage } from './pages/NotFoundPage.jsx';
 
 export default function App() {
@@ -43,10 +45,12 @@ export default function App() {
         </Route>
 
         <Route element={<ProtectedRoute roles={['recruiter', 'admin']} />}>
+          <Route path="recruiter" element={<RecruiterDashboardPage />} />
           <Route path="recruiter/jobs" element={<RecruiterJobsPage />} />
           <Route path="recruiter/jobs/new" element={<JobEditorPage />} />
           <Route path="recruiter/jobs/:id/edit" element={<JobEditorPage />} />
-          <Route path="recruiter/jobs/:id/applicants" element={<JobApplicantsPage />} />
+          <Route path="recruiter/jobs/:id/pipeline" element={<JobPipelinePage />} />
+          <Route path="recruiter/company" element={<CompanyProfilePage />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />
