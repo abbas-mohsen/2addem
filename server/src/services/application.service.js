@@ -9,6 +9,12 @@ import {
   newApplicantEmail,
   stageChangedEmail,
 } from './email.service.js';
+import {
+  notifyApplicationReceived,
+  notifyApplicationSubmitted,
+  notifyStageChanged,
+} from './notification.service.js';
+import { STAGE_LABELS } from '../utils/labels.js';
 
 const CANDIDATE_CARD_FIELDS = 'name email avatarUrl profile.headline profile.location profile.skills';
 
@@ -116,9 +122,13 @@ export async function notifyNewApplication({ job, candidate }) {
   if (!company) return;
 
   applicationReceivedEmail({ candidate, job, company });
+  notifyApplicationSubmitted({ candidateId: candidate._id, job, company });
 
   const recruiter = await User.findById(job.createdBy).select('email name').lean();
-  if (recruiter) newApplicantEmail({ recruiter, candidate, job });
+  if (recruiter) {
+    newApplicantEmail({ recruiter, candidate, job });
+    notifyApplicationReceived({ recruiterId: recruiter._id, candidateName: candidate.name, job });
+  }
 }
 
 export async function notifyStageChange(application) {
@@ -131,4 +141,10 @@ export async function notifyStageChange(application) {
   if (!candidate || !job || !company) return;
 
   stageChangedEmail({ candidate, job, company, stage: application.stage });
+  notifyStageChanged({
+    candidateId: candidate._id,
+    job,
+    company,
+    stageLabel: STAGE_LABELS[application.stage],
+  });
 }

@@ -69,7 +69,7 @@ export function JobFilters({ draft, onDraftChange, onSubmit, onReset, activeCoun
         <Input
           type="number"
           min="0"
-          step="1000"
+          step="any"
           placeholder="Minimum salary"
           aria-label="Minimum salary"
           value={draft.salaryMin}

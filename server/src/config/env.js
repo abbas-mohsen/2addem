@@ -16,6 +16,11 @@ const schema = z.object({
   JWT_REFRESH_SECRET: z.string().min(16, 'JWT_REFRESH_SECRET must be at least 16 characters'),
   JWT_ACCESS_TTL: z.string().default('15m'),
   JWT_REFRESH_TTL: z.string().default('30d'),
+  // Credential brute-force guard. Keep this low in production; raise it locally
+  // when automated tests sign in repeatedly.
+  AUTH_RATE_LIMIT: z.coerce.number().int().positive().default(20),
+  AUTH_RATE_WINDOW_MIN: z.coerce.number().int().positive().default(15),
+
   STORAGE_DRIVER: z.enum(['local']).default('local'),
   UPLOAD_DIR: z.string().default('uploads'),
   MAX_UPLOAD_MB: z.coerce.number().positive().default(5),

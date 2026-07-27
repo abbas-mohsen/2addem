@@ -5,6 +5,7 @@ import { optionalAuth, requireAuth, requireCompany, requireRole } from '../middl
 import { validate } from '../middleware/validate.js';
 import { uploadResume } from '../middleware/upload.js';
 import {
+  aiDraftSchema,
   createJobSchema,
   jobStatusSchema,
   listJobsQuerySchema,
@@ -34,6 +35,14 @@ router.get(
 );
 
 router.post('/', recruiterOnly, validate({ body: createJobSchema }), jobController.createJob);
+
+// Stubbed generation — see services/ai.service.js.
+router.post(
+  '/ai-draft',
+  recruiterOnly,
+  validate({ body: aiDraftSchema }),
+  jobController.draftWithAi
+);
 
 router.get('/:slugOrId', optionalAuth, jobController.getJob);
 

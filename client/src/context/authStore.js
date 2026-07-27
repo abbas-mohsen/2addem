@@ -52,7 +52,8 @@ onUnauthorized(() => {
 });
 
 export const homePathFor = (user) => {
-  if (user?.role === 'recruiter' || user?.role === 'admin') return '/recruiter';
+  if (user?.role === 'admin') return '/admin';
+  if (user?.role === 'recruiter') return '/recruiter';
   if (user?.role === 'candidate') return '/applications';
   return '/jobs';
 };

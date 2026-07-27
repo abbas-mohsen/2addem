@@ -117,6 +117,35 @@ export function newApplicantEmail({ recruiter, candidate, job }) {
   });
 }
 
+export function interviewScheduledEmail({ candidate, job, company, interview }) {
+  const when = new Intl.DateTimeFormat('en', {
+    dateStyle: 'full',
+    timeStyle: 'short',
+  }).format(new Date(interview.scheduledFor));
+
+  const where =
+    interview.locationType === 'video'
+      ? `Video call${interview.location ? `: ${interview.location}` : ''}`
+      : interview.locationType === 'phone'
+        ? `Phone call${interview.location ? `: ${interview.location}` : ''}`
+        : `On-site${interview.location ? `: ${interview.location}` : ''}`;
+
+  return sendNotification({
+    to: candidate.email,
+    subject: `Interview scheduled — ${job.title}`,
+    text: `${company.name} scheduled your interview for ${job.title} on ${when}. ${where}`,
+    html: wrap(
+      'Your interview is booked',
+      `<p style="margin:0"><strong>${company.name}</strong> scheduled an interview for
+       <strong>${job.title}</strong>.</p>
+       <p style="margin:14px 0 0"><strong>When:</strong> ${when} (${interview.durationMins} minutes)</p>
+       <p style="margin:6px 0 0"><strong>Where:</strong> ${where}</p>
+       ${interview.notes ? `<p style="margin:14px 0 0">${interview.notes}</p>` : ''}`,
+      { url: `${env.CLIENT_URL}/applications`, label: 'View my applications' }
+    ),
+  });
+}
+
 export function stageChangedEmail({ candidate, job, company, stage }) {
   return sendNotification({
     to: candidate.email,

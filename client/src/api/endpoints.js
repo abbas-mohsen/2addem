@@ -22,6 +22,7 @@ export const jobsApi = {
   remove: (id) => api.delete(`/jobs/${id}`).then(unwrap),
   applications: ({ id, ...params }) =>
     api.get(`/jobs/${id}/applications`, { params }).then(unwrapList),
+  aiDraft: (payload) => api.post('/jobs/ai-draft', payload).then(unwrap),
 };
 
 export const applicationsApi = {
@@ -34,6 +35,41 @@ export const applicationsApi = {
   addNote: ({ id, body }) => api.post(`/applications/${id}/notes`, { body }).then(unwrap),
   setTags: ({ id, tags }) => api.patch(`/applications/${id}/tags`, { tags }).then(unwrap),
   setScore: ({ id, score }) => api.patch(`/applications/${id}/score`, { score }).then(unwrap),
+};
+
+export const notificationsApi = {
+  list: (params) => api.get('/notifications', { params }).then(unwrap),
+  read: (id) => api.patch(`/notifications/${id}/read`).then(unwrap),
+  readAll: () => api.patch('/notifications/read-all').then(unwrap),
+};
+
+export const interviewsApi = {
+  mine: (params) => api.get('/interviews/mine', { params }).then(unwrap),
+  forApplication: (applicationId) =>
+    api.get(`/applications/${applicationId}/interviews`).then(unwrap),
+  create: ({ applicationId, ...payload }) =>
+    api.post(`/applications/${applicationId}/interviews`, payload).then(unwrap),
+  update: ({ id, ...payload }) => api.patch(`/interviews/${id}`, payload).then(unwrap),
+  remove: (id) => api.delete(`/interviews/${id}`).then(unwrap),
+};
+
+export const talentApi = {
+  list: (params) => api.get('/talent-pool', { params }).then(unwrapList),
+  ids: () => api.get('/talent-pool/ids').then(unwrap),
+  save: (payload) => api.post('/talent-pool', payload).then(unwrap),
+  update: ({ id, ...payload }) => api.patch(`/talent-pool/${id}`, payload).then(unwrap),
+  remove: (id) => api.delete(`/talent-pool/${id}`).then(unwrap),
+};
+
+export const adminApi = {
+  overview: () => api.get('/admin/overview').then(unwrap),
+  users: (params) => api.get('/admin/users', { params }).then(unwrapList),
+  setUserActive: ({ id, isActive }) =>
+    api.patch(`/admin/users/${id}/active`, { isActive }).then(unwrap),
+  jobs: (params) => api.get('/admin/jobs', { params }).then(unwrapList),
+  takeDownJob: (id) => api.patch(`/admin/jobs/${id}/takedown`).then(unwrap),
+  deleteJob: (id) => api.delete(`/admin/jobs/${id}`).then(unwrap),
+  companies: (params) => api.get('/admin/companies', { params }).then(unwrapList),
 };
 
 export const companiesApi = {

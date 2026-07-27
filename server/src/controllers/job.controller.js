@@ -2,6 +2,7 @@ import { Job } from '../models/Job.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { buildPageMeta, sendData, sendList } from '../utils/respond.js';
 import { Application } from '../models/Application.js';
+import { generateJobDraft } from '../services/ai.service.js';
 import {
   applyStatusTransition,
   buildJobSlug,
@@ -39,6 +40,15 @@ export const listMyJobs = asyncHandler(async (req, res) => {
   });
 
   sendList(res, items, buildPageMeta({ page, limit, total }));
+});
+
+export const draftWithAi = asyncHandler(async (req, res) => {
+  const company = await req.user.populate('company', 'name');
+
+  sendData(
+    res,
+    generateJobDraft({ ...req.body, companyName: company.company?.name ?? 'Our team' })
+  );
 });
 
 export const createJob = asyncHandler(async (req, res) => {

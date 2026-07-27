@@ -5,6 +5,7 @@ import { useAuthStore } from '../../context/authStore.js';
 import { initials } from '../../lib/format.js';
 import { Button } from '../ui/Button.jsx';
 import { Logo } from '../ui/Logo.jsx';
+import { NotificationBell } from '../../features/notifications/NotificationBell.jsx';
 import { cn } from '../../lib/cn.js';
 
 const LINKS_BY_ROLE = {
@@ -16,12 +17,12 @@ const LINKS_BY_ROLE = {
   recruiter: [
     { to: '/recruiter', label: 'Dashboard', end: true },
     { to: '/recruiter/jobs', label: 'Jobs' },
+    { to: '/recruiter/talent', label: 'Talent' },
     { to: '/recruiter/company', label: 'Company' },
   ],
   admin: [
-    { to: '/recruiter', label: 'Dashboard', end: true },
-    { to: '/recruiter/jobs', label: 'Jobs' },
-    { to: '/recruiter/company', label: 'Company' },
+    { to: '/admin', label: 'Moderation' },
+    { to: '/jobs', label: 'Job board' },
   ],
 };
 
@@ -66,6 +67,7 @@ export function Navbar() {
             <div className="bg-ink-100 h-8 w-32 animate-pulse rounded-lg" aria-hidden="true" />
           ) : user ? (
             <>
+              <NotificationBell />
               <div className="flex items-center gap-2.5">
                 <span
                   className="bg-brand-100 text-brand-700 flex size-8 items-center justify-center rounded-full text-xs font-semibold"
@@ -97,15 +99,18 @@ export function Navbar() {
           )}
         </div>
 
-        <button
-          type="button"
-          className="text-ink-700 -mr-2 p-2 md:hidden"
-          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen((open) => !open)}
-        >
-          {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
-        </button>
+        <div className="flex items-center gap-1 md:hidden">
+          {user && <NotificationBell />}
+          <button
+            type="button"
+            className="text-ink-700 -mr-2 p-2"
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+          </button>
+        </div>
       </div>
 
       {menuOpen && (

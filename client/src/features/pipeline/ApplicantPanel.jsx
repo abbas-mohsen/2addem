@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Download, Mail, MapPin, Star, X } from 'lucide-react';
-import { applicationsApi } from '../../api/endpoints.js';
+import { BookmarkPlus, Check, Download, Mail, MapPin, Star, X } from 'lucide-react';
+import { applicationsApi, talentApi } from '../../api/endpoints.js';
 import { errorMessage } from '../../api/client.js';
+import { InterviewSection } from './InterviewSection.jsx';
 import { Badge, STAGE_TONES } from '../../components/ui/Badge.jsx';
 import { Button } from '../../components/ui/Button.jsx';
 import { Input, Select, Textarea } from '../../components/ui/Field.jsx';
@@ -40,8 +41,19 @@ export function ApplicantPanel({ applicationId, jobId, onClose }) {
   const setScore = useMutation({ mutationFn: applicationsApi.setScore, onSuccess: refresh });
   const setStage = useMutation({ mutationFn: applicationsApi.setStage, onSuccess: refresh });
 
-  const mutationError = [addNote, setTags, setScore, setStage].find((m) => m.isError);
+  const savedIds = useQuery({ queryKey: ['talent-ids'], queryFn: talentApi.ids });
+
+  const saveToPool = useMutation({
+    mutationFn: talentApi.save,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['talent-ids'] });
+      queryClient.invalidateQueries({ queryKey: ['talent-pool'] });
+    },
+  });
+
+  const mutationError = [addNote, setTags, setScore, setStage, saveToPool].find((m) => m.isError);
   const withdrawn = application?.status === 'withdrawn';
+  const inPool = savedIds.data?.candidateIds?.includes(String(application?.candidate?._id));
 
   return (
     <>
@@ -154,18 +166,46 @@ export function ApplicantPanel({ applicationId, jobId, onClose }) {
                     {application.candidate.profile.location}
                   </p>
                 )}
-                <Button
-                  as="a"
-                  variant="outline"
-                  size="sm"
-                  href={application.resumeUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-1"
-                >
-                  <Download className="size-4" aria-hidden="true" />
-                  {application.resumeName ?? 'Resume'}
-                </Button>
+                <div className="mt-1 flex flex-wrap gap-2">
+                  <Button
+                    as="a"
+                    variant="outline"
+                    size="sm"
+                    href={application.resumeUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <Download className="size-4" aria-hidden="true" />
+                    {application.resumeName ?? 'Resume'}
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={inPool}
+                    loading={saveToPool.isPending}
+                    onClick={() =>
+                      saveToPool.mutate({
+                        candidateId: application.candidate._id,
+                        sourceApplication: application._id,
+                        note: '',
+                        tags: application.tags ?? [],
+                      })
+                    }
+                  >
+                    {inPool ? (
+                      <>
+                        <Check className="size-4" aria-hidden="true" />
+                        In talent pool
+                      </>
+                    ) : (
+                      <>
+                        <BookmarkPlus className="size-4" aria-hidden="true" />
+                        Save to pool
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
 
               <Section title="Rating">
@@ -224,6 +264,8 @@ export function ApplicantPanel({ applicationId, jobId, onClose }) {
                   </Button>
                 </form>
               </Section>
+
+              <InterviewSection applicationId={application._id} disabled={withdrawn} />
 
               {application.coverLetter && (
                 <Section title="Cover note">

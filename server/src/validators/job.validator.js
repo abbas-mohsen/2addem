@@ -59,6 +59,14 @@ export const listJobsQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(12),
 });
 
+export const aiDraftSchema = z.object({
+  title: z.string().trim().min(3, 'Give the role a title first').max(160),
+  seniority: z.enum(['junior', 'mid', 'senior', 'lead']).default('mid'),
+  remote: z.enum(REMOTE_TYPES).default('onsite'),
+  location: z.string().trim().max(140).default(''),
+  skills: z.array(z.string().trim().min(1).max(40)).max(30).default([]),
+});
+
 export const myJobsQuerySchema = z.object({
   status: z.enum(JOB_STATUSES).optional(),
   page: z.coerce.number().int().min(1).default(1),

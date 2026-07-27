@@ -7,9 +7,10 @@ The name is the Levantine imperative **قدّم** — *"apply"* — written the 
 it, with `2` standing in for the glottal ق. The mark is that `2` with its base stroke running out
 into an arrow; the root ق-د-م means *to step forward*.
 
-> Status: **Phase 2 complete** — auth, job board, applications, a drag-and-drop ATS pipeline,
-> dashboards and email notifications all work end to end. Phase 3 (interviews, in-app
-> notifications, admin, seed data) is not built yet. See [Roadmap](#roadmap).
+> Status: **Phases 1–3 complete.** Auth, job board, applications, a drag-and-drop ATS pipeline,
+> dashboards, email and in-app notifications, interview scheduling, a talent pool and an admin
+> moderation panel all work end to end. Run `npm run seed:fresh` for demo data and log in with the
+> accounts below. See [Roadmap](#roadmap) for what is deliberately left out.
 
 ---
 
@@ -46,8 +47,24 @@ Open `server/.env` and set at minimum `MONGODB_URI` and the two JWT secrets.
 ### Run it
 
 ```bash
+npm run seed:fresh     # wipe and load demo data (optional but recommended)
 npm run dev            # API on :4000 and client on :5173, together
 ```
+
+### Demo accounts
+
+`npm run seed:fresh` builds three companies, seven jobs, nine applications, interviews, a talent
+pool and notifications. Every account uses the password `password123`:
+
+| Email                   | Role      | What they show                                    |
+| ----------------------- | --------- | ------------------------------------------------- |
+| `admin@2addem.dev`      | admin     | Moderation panel with every user, job and company  |
+| `recruiter1@2addem.dev` | recruiter | Cedarline — busiest pipeline, talent pool, stats   |
+| `recruiter2@2addem.dev` | recruiter | Manara Labs — remote roles                         |
+| `candidate1@2addem.dev` | candidate | Lara — at interview stage, with a booked interview |
+| `candidate2@2addem.dev` | candidate | Karim — has an offer                               |
+
+`npm run seed` (without `:fresh`) is a no-op if demo data already exists, so it will not duplicate.
 
 Or separately:
 
@@ -87,6 +104,10 @@ npm run format    # prettier
 | `STORAGE_DRIVER`                      | `local`                                 | Only `local` today; the seam for an S3 driver is in place  |
 | `UPLOAD_DIR`                          | `uploads`                               | Relative to `server/`                                      |
 | `MAX_UPLOAD_MB`                       | `5`                                     | Resume size cap                                            |
+| `AUTH_RATE_LIMIT` / `AUTH_RATE_WINDOW_MIN` | `20` / `15`                        | Sign-in throttle per IP. Raise locally for automated tests  |
+| `EMAIL_ENABLED`                       | `true`                                  | Set `false` to silence notification email entirely          |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` | — / `587` / — / —       | Leave `SMTP_HOST` empty in dev to use Ethereal. Required in production |
+| `MAIL_FROM`                           | `2addem <no-reply@2addem.local>`        | From address on notification email                          |
 
 The server validates its environment on boot with Zod and refuses to start with a clear message if
 anything is missing — no silent misconfiguration.
@@ -180,6 +201,29 @@ In development with `SMTP_HOST` empty, the app creates an [Ethereal](https://eth
 test inbox on the first send and logs a preview URL for each message. Nothing reaches a real
 address until you configure SMTP.
 
+### Interviews and notifications
+
+Recruiters schedule interviews from the applicant panel; candidates see upcoming ones on their
+dashboard with a join link. Every notable event writes both an email and an in-app notification,
+surfaced through the bell in the nav (polled once a minute — no websockets for a project this size).
+
+### Moderation
+
+Admins are never created by public registration; the seed script is the only path. The panel can
+search users, deactivate and reactivate accounts, and take jobs down. Two guardrails matter:
+deactivating a user bumps their `tokenVersion` so existing sessions die immediately rather than
+lasting until the access token expires, and admins cannot deactivate themselves or each other.
+
+Taking a job down closes it instead of deleting it, and notifies the recruiter. Deletion is only
+allowed when nobody has applied — candidates' records are not the moderator's to destroy.
+
+### The AI job-ad builder is a stub
+
+`server/src/services/ai.service.js` makes **no network call and contains no model logic.** It
+assembles a deterministic template from the recruiter's own input so the end-to-end flow can be
+built and tested without a provider. The UI labels it "Stub" and shows a disclaimer on every
+generated draft. The file documents exactly what to replace to wire up the Anthropic API.
+
 ### File storage
 
 Resumes are written to `server/uploads` by multer with generated filenames — the client-supplied
@@ -241,18 +285,58 @@ All routes are under `/api`. Success responses are `{ success: true, data, meta?
 | POST   | `/companies`            | recruiter | For accounts without one                     |
 | PATCH  | `/companies/mine`       | recruiter |                                              |
 
+### Interviews, notifications and talent pool
+
+| Method | Route                             | Access    | Notes                                  |
+| ------ | --------------------------------- | --------- | -------------------------------------- |
+| POST   | `/applications/:id/interviews`    | recruiter | Rejects times in the past              |
+| GET    | `/applications/:id/interviews`    | recruiter |                                        |
+| GET    | `/interviews/mine`                | candidate | `upcoming=true` for the dashboard      |
+| PATCH  | `/interviews/:id`                 | recruiter | Cancelling notifies the candidate      |
+| DELETE | `/interviews/:id`                 | recruiter |                                        |
+| GET    | `/notifications`                  | auth      | Returns items plus an unread count     |
+| PATCH  | `/notifications/:id/read`         | auth      | Own notifications only                 |
+| PATCH  | `/notifications/read-all`         | auth      |                                        |
+| GET    | `/talent-pool`                    | recruiter | Search by name, headline, note or tag  |
+| GET    | `/talent-pool/ids`                | recruiter | Drives the "already saved" state       |
+| POST   | `/talent-pool`                    | recruiter | Unique per (company, candidate)        |
+| PATCH  | `/talent-pool/:id`                | recruiter |                                        |
+| DELETE | `/talent-pool/:id`                | recruiter |                                        |
+| POST   | `/jobs/ai-draft`                  | recruiter | **Stub** — template only, no model     |
+
+### Admin
+
+| Method | Route                     | Access | Notes                                          |
+| ------ | ------------------------- | ------ | ---------------------------------------------- |
+| GET    | `/admin/overview`         | admin  | Platform-wide counters                         |
+| GET    | `/admin/users`            | admin  | Search by name/email, filter by role and status |
+| PATCH  | `/admin/users/:id/active` | admin  | Deactivating also revokes live sessions        |
+| GET    | `/admin/jobs`             | admin  |                                                |
+| PATCH  | `/admin/jobs/:id/takedown`| admin  | Closes the job and notifies its author         |
+| DELETE | `/admin/jobs/:id`         | admin  | Refused when the job has applicants            |
+| GET    | `/admin/companies`        | admin  |                                                |
+
 ---
 
 ## Trying it out
 
 There is no seed script yet (it is a Phase 3 task), so the fastest path is:
 
+Fastest path — run `npm run seed:fresh`, then sign in as `recruiter1@2addem.dev` and open
+**Jobs → Pipeline** on *Senior Frontend Engineer*. Drag a card between stages, open one for notes,
+tags, score and interview scheduling. **Talent** shows the saved candidates.
+
+Then sign in as `candidate1@2addem.dev` to see the same pipeline from the other side: application
+stages, an upcoming interview with a join link, and the notification bell.
+
+Finally `admin@2addem.dev` for the moderation panel.
+
+To walk through it from scratch instead:
+
 1. Register as an employer at `/register?role=recruiter` — a company is created for you.
 2. Fill in **Company** so your career page is not empty, then create a job and **Publish job**.
 3. Sign out, register as a candidate, open the job from the board and apply with any PDF.
-4. Sign back in as the recruiter. The dashboard shows the counters; **Jobs → Pipeline** opens the
-   board, where you can drag the candidate between stages and open their card for notes, tags and
-   a score.
+4. Sign back in as the recruiter to work the pipeline.
 5. Watch the server log for Ethereal preview links — one per notification email.
 
 Sign-in and sign-up are rate limited, so many rapid account switches will start returning
@@ -266,8 +350,8 @@ Sign-in and sign-up are rate limited, so many rapid account switches will start 
       upload, candidate application tracking, recruiter applicant list and stage changes
 - [x] **Phase 2** — drag-and-drop kanban pipeline, notes/tags/scores in the UI, recruiter and
       candidate dashboards, editable company profile, email notifications
-- [ ] **Phase 3** — interview scheduling, in-app notifications, admin moderation, talent pool,
-      AI job-ad stub, seed script and a full responsive/polish pass
+- [x] **Phase 3** — interview scheduling, in-app notifications, admin moderation, talent pool,
+      AI job-ad stub, seed script and a responsive pass
 
 Localization for the Lebanese market — structured cities, "fresh USD" salaries, a remote-for-abroad
 filter and Arabic/RTL — is deliberately deferred until after Phase 3.

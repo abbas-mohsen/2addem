@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
+import { env } from '../config/env.js';
 import * as authController from '../controllers/auth.controller.js';
 import { requireAuth } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
@@ -13,8 +14,8 @@ const router = Router();
 
 // Credential endpoints are the obvious brute-force target.
 const credentialLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 20,
+  windowMs: env.AUTH_RATE_WINDOW_MIN * 60 * 1000,
+  limit: env.AUTH_RATE_LIMIT,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
   message: { success: false, error: { message: 'Too many attempts, try again later' } },

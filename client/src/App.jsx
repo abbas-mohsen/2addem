@@ -16,6 +16,8 @@ import { RecruiterDashboardPage } from './pages/RecruiterDashboardPage.jsx';
 import { JobEditorPage } from './pages/JobEditorPage.jsx';
 import { JobPipelinePage } from './pages/JobPipelinePage.jsx';
 import { CompanyProfilePage } from './pages/CompanyProfilePage.jsx';
+import { TalentPoolPage } from './pages/TalentPoolPage.jsx';
+import { AdminPage } from './pages/AdminPage.jsx';
 import { NotFoundPage } from './pages/NotFoundPage.jsx';
 
 export default function App() {
@@ -44,13 +46,20 @@ export default function App() {
           <Route path="applications" element={<MyApplicationsPage />} />
         </Route>
 
-        <Route element={<ProtectedRoute roles={['recruiter', 'admin']} />}>
+        {/* Recruiter pages need a company; admins have none, so they get the
+            moderation panel instead rather than a page that errors. */}
+        <Route element={<ProtectedRoute roles={['recruiter']} />}>
           <Route path="recruiter" element={<RecruiterDashboardPage />} />
           <Route path="recruiter/jobs" element={<RecruiterJobsPage />} />
           <Route path="recruiter/jobs/new" element={<JobEditorPage />} />
           <Route path="recruiter/jobs/:id/edit" element={<JobEditorPage />} />
           <Route path="recruiter/jobs/:id/pipeline" element={<JobPipelinePage />} />
           <Route path="recruiter/company" element={<CompanyProfilePage />} />
+          <Route path="recruiter/talent" element={<TalentPoolPage />} />
+        </Route>
+
+        <Route element={<ProtectedRoute roles={['admin']} />}>
+          <Route path="admin" element={<AdminPage />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />

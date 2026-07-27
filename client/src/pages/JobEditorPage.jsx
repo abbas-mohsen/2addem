@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, FlaskConical, Sparkles } from 'lucide-react';
 import { jobsApi } from '../api/endpoints.js';
 import { errorMessage, fieldErrors } from '../api/client.js';
 import { Container, PageHeader } from '../components/layout/AppLayout.jsx';
@@ -100,6 +100,22 @@ function JobForm({ jobId, job }) {
   const [form, setForm] = useState(() => toFormState(job));
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState(null);
+  const [draftNotice, setDraftNotice] = useState(null);
+
+  const aiDraft = useMutation({
+    mutationFn: jobsApi.aiDraft,
+    onSuccess: ({ draft, disclaimer }) => {
+      setForm((current) => ({
+        ...current,
+        description: draft.description,
+        responsibilities: draft.responsibilities.join('\n'),
+        requirements: draft.requirements.join('\n'),
+      }));
+      setDraftNotice(disclaimer);
+      setErrors((current) => ({ ...current, description: undefined }));
+    },
+    onError: (error) => setSubmitError(errorMessage(error, 'Could not build a draft.')),
+  });
 
   const save = useMutation({
     mutationFn: (payload) => (isEdit ? jobsApi.update({ id, ...payload }) : jobsApi.create(payload)),
@@ -191,6 +207,56 @@ function JobForm({ jobId, job }) {
             )}
           </Field>
 
+          {/* Clearly labelled as a stub: it must never read as finished copy. */}
+          <div className="border-ink-200 bg-ink-50/70 rounded-lg border border-dashed p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-ink-800 flex items-center gap-1.5 text-sm font-medium">
+                  <FlaskConical className="text-ink-400 size-4" aria-hidden="true" />
+                  Draft builder
+                  <span className="bg-ink-200 text-ink-600 ml-1 rounded px-1.5 py-0.5 text-[10px] font-semibold tracking-wide uppercase">
+                    Stub
+                  </span>
+                </p>
+                <p className="text-ink-500 mt-1 max-w-lg text-xs">
+                  Fills the fields below from a local template using your title, skills and work
+                  model. No AI model is called — see{' '}
+                  <code className="bg-ink-200/60 rounded px-1">server/src/services/ai.service.js</code>{' '}
+                  to wire one up.
+                </p>
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                loading={aiDraft.isPending}
+                disabled={form.title.trim().length < 3}
+                onClick={() =>
+                  aiDraft.mutate({
+                    title: form.title.trim(),
+                    remote: form.remote,
+                    location: form.location.trim(),
+                    skills: toList(form.skills),
+                  })
+                }
+              >
+                <Sparkles className="size-4" aria-hidden="true" />
+                Build a draft
+              </Button>
+            </div>
+
+            {form.title.trim().length < 3 && (
+              <p className="text-ink-400 mt-2 text-xs">Add a job title first.</p>
+            )}
+
+            {draftNotice && (
+              <p className="mt-3 rounded bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                {draftNotice}
+              </p>
+            )}
+          </div>
+
           <Field label="About the role" error={errors.description} required>
             {(props) => (
               <Textarea
@@ -281,7 +347,7 @@ function JobForm({ jobId, job }) {
                   {...props}
                   type="number"
                   min="0"
-                  step="1000"
+                  step="any"
                   placeholder="60000"
                   value={form.salaryMin}
                   onChange={update('salaryMin')}
@@ -295,7 +361,7 @@ function JobForm({ jobId, job }) {
                   {...props}
                   type="number"
                   min="0"
-                  step="1000"
+                  step="any"
                   placeholder="85000"
                   value={form.salaryMax}
                   error={errors.salaryMax}

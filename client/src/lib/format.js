@@ -36,9 +36,22 @@ export function formatSalary({ salaryMin, salaryMax, currency = 'USD' }) {
   return salaryMin != null ? `From ${money(salaryMin)}` : `Up to ${money(salaryMax)}`;
 }
 
+export const INTERVIEW_LOCATION_LABELS = {
+  video: 'Video call',
+  phone: 'Phone call',
+  onsite: 'On-site',
+};
+
 export function formatDate(value) {
   if (!value) return '';
   return new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(new Date(value));
+}
+
+export function formatDateTime(value) {
+  if (!value) return '';
+  return new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' }).format(
+    new Date(value)
+  );
 }
 
 const RELATIVE_UNITS = [

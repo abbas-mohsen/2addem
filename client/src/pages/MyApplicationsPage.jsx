@@ -1,7 +1,7 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CheckCircle2, FileSearch } from 'lucide-react';
-import { applicationsApi } from '../api/endpoints.js';
+import { CalendarClock, CheckCircle2, FileSearch, MapPin, Video } from 'lucide-react';
+import { applicationsApi, interviewsApi } from '../api/endpoints.js';
 import { errorMessage } from '../api/client.js';
 import { Container, PageHeader } from '../components/layout/AppLayout.jsx';
 import { Badge, STAGE_TONES } from '../components/ui/Badge.jsx';
@@ -9,7 +9,13 @@ import { Button } from '../components/ui/Button.jsx';
 import { CompanyLogo } from '../components/ui/Logo.jsx';
 import { EmptyState, ErrorState, LoadingState } from '../components/ui/States.jsx';
 import { Pagination } from '../components/ui/Pagination.jsx';
-import { STAGE_LABELS, STAGE_ORDER, formatRelative } from '../lib/format.js';
+import {
+  INTERVIEW_LOCATION_LABELS,
+  STAGE_LABELS,
+  STAGE_ORDER,
+  formatDateTime,
+  formatRelative,
+} from '../lib/format.js';
 import { cn } from '../lib/cn.js';
 
 export function MyApplicationsPage() {
@@ -29,6 +35,11 @@ export function MyApplicationsPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['my-applications'] }),
   });
 
+  const interviews = useQuery({
+    queryKey: ['my-interviews'],
+    queryFn: () => interviewsApi.mine({ upcoming: 'true', limit: 5 }),
+  });
+
   const applications = query.data?.items ?? [];
 
   return (
@@ -43,7 +54,11 @@ export function MyApplicationsPage() {
         }
       />
 
-      {query.isSuccess && applications.length > 0 && <ApplicationSummary meta={query.data.meta} applications={applications} />}
+      {query.isSuccess && applications.length > 0 && (
+        <ApplicationSummary meta={query.data.meta} applications={applications} />
+      )}
+
+      <UpcomingInterviews interviews={interviews.data?.interviews ?? []} />
 
       {justApplied && (
         <p className="mt-6 flex items-center gap-2 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
@@ -89,6 +104,58 @@ export function MyApplicationsPage() {
         />
       </div>
     </Container>
+  );
+}
+
+/* Only shown when something is actually booked — an empty "no interviews" card
+   would be noise on a dashboard that already has an empty state. */
+function UpcomingInterviews({ interviews }) {
+  if (interviews.length === 0) return null;
+
+  return (
+    <section className="border-brand-200 bg-brand-50/60 rounded-card mt-6 border p-5">
+      <h2 className="text-brand-900 flex items-center gap-2 text-base font-semibold">
+        <CalendarClock className="size-4" aria-hidden="true" />
+        Upcoming interview{interviews.length === 1 ? '' : 's'}
+      </h2>
+
+      <ul className="mt-3 space-y-3">
+        {interviews.map((interview) => {
+          const Icon = interview.locationType === 'video' ? Video : MapPin;
+          return (
+            <li
+              key={interview._id}
+              className="border-brand-100 flex flex-wrap items-start justify-between gap-3 rounded-lg border bg-white p-3.5"
+            >
+              <div className="min-w-0">
+                <p className="text-ink-900 text-sm font-medium">
+                  {interview.job?.title} · {interview.company?.name}
+                </p>
+                <p className="text-ink-600 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                  <span>{formatDateTime(interview.scheduledFor)}</span>
+                  <span className="inline-flex items-center gap-1">
+                    <Icon className="size-3.5" aria-hidden="true" />
+                    {INTERVIEW_LOCATION_LABELS[interview.locationType]} · {interview.durationMins} min
+                  </span>
+                </p>
+                {interview.notes && (
+                  <p className="text-ink-600 mt-1.5 text-xs leading-relaxed">{interview.notes}</p>
+                )}
+              </div>
+
+              {interview.location &&
+                (interview.locationType === 'video' && interview.location.startsWith('http') ? (
+                  <Button as="a" size="sm" href={interview.location} target="_blank" rel="noreferrer">
+                    Join call
+                  </Button>
+                ) : (
+                  <span className="text-ink-500 text-xs">{interview.location}</span>
+                ))}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }
 
