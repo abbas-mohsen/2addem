@@ -15,7 +15,8 @@ import { applicationsApi, jobsApi } from '../api/endpoints.js';
 import { errorMessage } from '../api/client.js';
 import { Container, PageHeader } from '../components/layout/AppLayout.jsx';
 import { Button } from '../components/ui/Button.jsx';
-import { EmptyState, ErrorState, LoadingState } from '../components/ui/States.jsx';
+import { EmptyState, ErrorState } from '../components/ui/States.jsx';
+import { BoardSkeleton, PageHeaderSkeleton } from '../components/ui/Skeletons.jsx';
 import { StageColumn } from '../features/pipeline/StageColumn.jsx';
 import { ApplicantCard } from '../features/pipeline/ApplicantCard.jsx';
 import { ApplicantPanel } from '../features/pipeline/ApplicantPanel.jsx';
@@ -103,7 +104,16 @@ export function JobPipelinePage() {
     setStage.mutate({ id: application._id, stage });
   };
 
-  if (pipeline.isPending) return <LoadingState label="Loading pipeline…" />;
+  if (pipeline.isPending) {
+    return (
+      <Container wide className="py-8 sm:py-12">
+        <PageHeaderSkeleton />
+        <div className="mt-7">
+          <BoardSkeleton />
+        </div>
+      </Container>
+    );
+  }
 
   if (pipeline.isError) {
     return (

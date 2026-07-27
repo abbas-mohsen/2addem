@@ -7,7 +7,8 @@ import { Container, PageHeader } from '../components/layout/AppLayout.jsx';
 import { Badge, STAGE_TONES } from '../components/ui/Badge.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { CompanyLogo } from '../components/ui/Logo.jsx';
-import { EmptyState, ErrorState, LoadingState } from '../components/ui/States.jsx';
+import { EmptyState, ErrorState } from '../components/ui/States.jsx';
+import { ListRowsSkeleton } from '../components/ui/Skeletons.jsx';
 import { Pagination } from '../components/ui/Pagination.jsx';
 import {
   INTERVIEW_LOCATION_LABELS,
@@ -74,7 +75,7 @@ export function MyApplicationsPage() {
       )}
 
       <div className="mt-6 space-y-4">
-        {query.isPending && <LoadingState label="Loading your applications…" />}
+        {query.isPending && <ListRowsSkeleton count={3} />}
 
         {query.isError && (
           <ErrorState message={errorMessage(query.error)} onRetry={query.refetch} />

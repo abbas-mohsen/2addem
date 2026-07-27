@@ -8,6 +8,9 @@ const profileSchema = new mongoose.Schema(
     headline: { type: String, trim: true, maxlength: 160 },
     bio: { type: String, trim: true, maxlength: 4000 },
     location: { type: String, trim: true, maxlength: 120 },
+    // Stored as entered; the client suggests +961 but does not force it, since
+    // candidates applying from the diaspora have foreign numbers.
+    phone: { type: String, trim: true, maxlength: 32 },
     skills: { type: [String], default: [] },
     experienceYears: { type: Number, min: 0, max: 60 },
     resumeUrl: { type: String, trim: true },

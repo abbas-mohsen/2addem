@@ -224,6 +224,39 @@ assembles a deterministic template from the recruiter's own input so the end-to-
 built and tested without a provider. The UI labels it "Stub" and shows a disclaimer on every
 generated draft. The file documents exactly what to replace to wire up the Anthropic API.
 
+### Loading states
+
+Every async view has a skeleton shaped like the content it stands in for, so the page does not
+jump when data arrives. There is no full-page spinner anywhere — the only spinner left is inside a
+pending button. A thin progress bar at the top covers what skeletons cannot: mutations, background
+refetches, and the gap before a page's own skeleton mounts. It waits ~180ms before appearing, so
+fast responses never flash a bar.
+
+Skeleton groups are wrapped in a live region, so assistive tech announces "loading" once instead
+of reading out a wall of empty boxes, and the sweep animation is disabled under
+`prefers-reduced-motion`.
+
+### Built for the Lebanese market
+
+A few things a job board here has to get right, and which a generic clone gets wrong:
+
+- **Salaries are quoted in "fresh" USD.** Since 2019 the lira is not how pay is advertised, and
+  "dollars" is ambiguous without saying whether they are fresh. Listings carry a `freshUsd` flag
+  and the board renders `$36,000 – $54,000 fresh`. Recruiters can turn it off if they mean lira or
+  local-bank dollars.
+- **Remote-for-a-company-abroad is its own filter.** Remote work paid from outside the country is a
+  materially different proposition to remote work for a local employer, and it is the filter
+  candidates here use most.
+- **Freelance is a first-class employment type,** not a flavour of contract.
+- **Locations** autocomplete from Lebanon's eight governorates and the cities that actually appear
+  in listings (`GET /api/meta/locations`). The field stays free text — plenty of roles sit in a
+  village or a specific district.
+- **Phone numbers** are on candidate profiles and shown to recruiters, formatted `+961` by default
+  but not forced, since diaspora applicants have foreign numbers.
+
+Arabic and RTL are **not** done. That is a layout pass across every page plus a translation layer,
+not a string swap, and it deserves its own phase.
+
 ### File storage
 
 Resumes are written to `server/uploads` by multer with generated filenames — the client-supplied
@@ -253,7 +286,8 @@ All routes are under `/api`. Success responses are `{ success: true, data, meta?
 
 | Method | Route                | Access    | Notes                                                     |
 | ------ | -------------------- | --------- | --------------------------------------------------------- |
-| GET    | `/jobs`              | public    | `q, location, remote, employmentType, skills, salaryMin, company, sort, page, limit` |
+| GET    | `/meta/locations`    | public    | Lebanese cities and governorates for autocomplete          |
+| GET    | `/jobs`              | public    | `q, location, remote, remoteAbroad, employmentType, skills, salaryMin, company, sort, page, limit` |
 | GET    | `/jobs/:slugOrId`    | public    | Drafts return 404; increments the view counter            |
 | GET    | `/jobs/mine`         | recruiter | Includes drafts, `status` filter                          |
 | POST   | `/jobs`              | recruiter | `status` may be `draft` or `published`                    |
@@ -353,7 +387,9 @@ Sign-in and sign-up are rate limited, so many rapid account switches will start 
 - [x] **Phase 3** — interview scheduling, in-app notifications, admin moderation, talent pool,
       AI job-ad stub, seed script and a responsive pass
 
-Localization for the Lebanese market — structured cities, "fresh USD" salaries, a remote-for-abroad
-filter and Arabic/RTL — is deliberately deferred until after Phase 3.
+- [x] **Market localization** — Lebanese location autocomplete, fresh-USD salaries, a
+      remote-for-abroad filter, freelance as an employment type, and phone numbers on profiles
+- [ ] **Arabic + RTL** — a translation layer and a full right-to-left layout pass. Deliberately
+      left as its own phase; it is not a string swap.
 
 Explicitly out of scope: multiposting to external job boards, payments, and real AI generation.

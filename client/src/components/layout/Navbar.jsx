@@ -4,6 +4,7 @@ import { LogOut, Menu, X } from 'lucide-react';
 import { useAuthStore } from '../../context/authStore.js';
 import { initials } from '../../lib/format.js';
 import { Button } from '../ui/Button.jsx';
+import { Skeleton } from '../ui/States.jsx';
 import { Logo } from '../ui/Logo.jsx';
 import { NotificationBell } from '../../features/notifications/NotificationBell.jsx';
 import { cn } from '../../lib/cn.js';
@@ -64,7 +65,7 @@ export function Navbar() {
 
         <div className="hidden items-center gap-3 md:flex">
           {resolving ? (
-            <div className="bg-ink-100 h-8 w-32 animate-pulse rounded-lg" aria-hidden="true" />
+            <Skeleton className="h-8 w-32 rounded-lg" />
           ) : user ? (
             <>
               <NotificationBell />
@@ -129,7 +130,7 @@ export function Navbar() {
 
           <div className="border-ink-200 mt-2 flex flex-col gap-2 border-t pt-3">
             {resolving ? (
-              <div className="bg-ink-100 h-9 animate-pulse rounded-lg" aria-hidden="true" />
+              <Skeleton className="h-9 rounded-lg" />
             ) : user ? (
               <>
                 <p className="text-ink-500 px-3 text-sm">

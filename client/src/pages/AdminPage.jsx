@@ -9,7 +9,8 @@ import { Container, PageHeader } from '../components/layout/AppLayout.jsx';
 import { Badge, JOB_STATUS_TONES } from '../components/ui/Badge.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { Input, Select } from '../components/ui/Field.jsx';
-import { EmptyState, ErrorState, LoadingState, Skeleton } from '../components/ui/States.jsx';
+import { EmptyState, ErrorState, Skeleton } from '../components/ui/States.jsx';
+import { ListRowsSkeleton, TableSkeleton } from '../components/ui/Skeletons.jsx';
 import { Pagination } from '../components/ui/Pagination.jsx';
 import { formatDate } from '../lib/format.js';
 import { cn } from '../lib/cn.js';
@@ -208,7 +209,7 @@ function UsersTab() {
         </p>
       )}
 
-      {query.isPending && <LoadingState label="Loading users…" />}
+      {query.isPending && <TableSkeleton rows={6} />}
       {query.isError && <ErrorState message={errorMessage(query.error)} onRetry={query.refetch} />}
       {query.isSuccess && users.length === 0 && (
         <EmptyState icon={Users} title="No users match those filters" />
@@ -343,7 +344,7 @@ function JobsTab() {
         </p>
       )}
 
-      {query.isPending && <LoadingState label="Loading jobs…" />}
+      {query.isPending && <ListRowsSkeleton count={4} />}
       {query.isError && <ErrorState message={errorMessage(query.error)} onRetry={query.refetch} />}
       {query.isSuccess && jobs.length === 0 && (
         <EmptyState icon={ShieldAlert} title="No jobs match those filters" />
@@ -427,7 +428,7 @@ function CompaniesTab() {
 
   return (
     <>
-      {query.isPending && <LoadingState label="Loading companies…" />}
+      {query.isPending && <ListRowsSkeleton count={4} />}
       {query.isError && <ErrorState message={errorMessage(query.error)} onRetry={query.refetch} />}
       {query.isSuccess && companies.length === 0 && (
         <EmptyState icon={Building2} title="No companies yet" />

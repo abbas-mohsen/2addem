@@ -137,6 +137,8 @@ const JOBS = [
     salaryMin: 48000,
     salaryMax: 72000,
     currency: 'USD',
+    freshUsd: true,
+    remoteAbroad: true,
     skills: ['Go', 'Kubernetes', 'Terraform'],
     description:
       'We run a lot of ingest for a team our size. You will own the pipeline that takes customer telemetry from edge collectors through to queryable storage, and the tooling our own engineers use to debug it.\n\nFully remote, asynchronous by default. We overlap four hours a day and write everything else down.',
@@ -159,10 +161,12 @@ const JOBS = [
     status: 'published',
     location: 'Remote',
     remote: 'remote',
-    employmentType: 'contract',
+    employmentType: 'freelance',
     salaryMin: 30000,
     salaryMax: 45000,
     currency: 'USD',
+    freshUsd: true,
+    remoteAbroad: true,
     skills: ['Technical writing', 'Public speaking', 'Node.js'],
     description:
       'Six-month contract with a real chance of becoming permanent. You will write the docs and demos we currently do not have, and talk to the people using us in production.\n\nWe are looking for someone who writes well and has genuinely shipped software — not one or the other.',
@@ -372,6 +376,7 @@ async function seed() {
           skills: data.skills,
           experienceYears: data.experienceYears,
           bio: data.bio,
+          phone: `+961 ${70 + index} ${100 + index * 7} ${200 + index * 13}`,
         },
       })
     );

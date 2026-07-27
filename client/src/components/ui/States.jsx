@@ -1,19 +1,9 @@
-import { AlertTriangle, Loader2 } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { cn } from '../../lib/cn.js';
 import { Button } from './Button.jsx';
 
-export function Spinner({ className }) {
-  return <Loader2 className={cn('text-ink-400 size-5 animate-spin', className)} aria-hidden="true" />;
-}
-
-export function LoadingState({ label = 'Loading…', className }) {
-  return (
-    <div className={cn('flex items-center justify-center gap-3 py-16', className)} role="status">
-      <Spinner />
-      <span className="text-ink-500 text-sm">{label}</span>
-    </div>
-  );
-}
+/* Loading is expressed with skeletons (see Skeletons.jsx), not spinners — the
+   only spinner left in the app is the one inside a pending Button. */
 
 export function ErrorState({ title = 'Something went wrong', message, onRetry, className }) {
   return (
@@ -61,5 +51,16 @@ export function EmptyState({ icon: Icon, title, message, action, className }) {
 }
 
 export function Skeleton({ className }) {
-  return <div className={cn('bg-ink-100 animate-pulse rounded-md', className)} />;
+  return <div className={cn('skeleton', className)} aria-hidden="true" />;
+}
+
+/* Wraps a set of skeletons so assistive tech announces "loading" once, instead
+   of reading out a wall of empty boxes. */
+export function SkeletonGroup({ label = 'Loading…', className, children }) {
+  return (
+    <div role="status" aria-busy="true" aria-label={label} className={className}>
+      <span className="sr-only">{label}</span>
+      {children}
+    </div>
+  );
 }

@@ -32,6 +32,12 @@ export const updateProfileSchema = z.object({
       headline: z.string().trim().max(160).optional(),
       bio: z.string().trim().max(4000).optional(),
       location: z.string().trim().max(120).optional(),
+      phone: z
+        .string()
+        .trim()
+        .max(32)
+        .regex(/^[+0-9 ()-]*$/, 'Use digits, spaces and + only')
+        .optional(),
       skills: z.array(z.string().trim().min(1).max(40)).max(30).optional(),
       experienceYears: z.coerce.number().min(0).max(60).optional(),
       links: z

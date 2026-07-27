@@ -37,6 +37,10 @@ export const applicationsApi = {
   setScore: ({ id, score }) => api.patch(`/applications/${id}/score`, { score }).then(unwrap),
 };
 
+export const metaApi = {
+  locations: () => api.get('/meta/locations').then(unwrap),
+};
+
 export const notificationsApi = {
   list: (params) => api.get('/notifications', { params }).then(unwrap),
   read: (id) => api.patch(`/notifications/${id}/read`).then(unwrap),

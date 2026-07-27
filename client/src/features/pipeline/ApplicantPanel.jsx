@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { BookmarkPlus, Check, Download, Mail, MapPin, Star, X } from 'lucide-react';
+import { BookmarkPlus, Check, Download, Mail, MapPin, Phone, Star, X } from 'lucide-react';
 import { applicationsApi, talentApi } from '../../api/endpoints.js';
 import { errorMessage } from '../../api/client.js';
 import { InterviewSection } from './InterviewSection.jsx';
 import { Badge, STAGE_TONES } from '../../components/ui/Badge.jsx';
 import { Button } from '../../components/ui/Button.jsx';
 import { Input, Select, Textarea } from '../../components/ui/Field.jsx';
-import { LoadingState } from '../../components/ui/States.jsx';
+import { Skeleton, SkeletonGroup } from '../../components/ui/States.jsx';
 import { STAGE_LABELS, STAGE_ORDER, formatRelative, initials } from '../../lib/format.js';
 import { cn } from '../../lib/cn.js';
 
@@ -107,7 +107,25 @@ export function ApplicantPanel({ applicationId, jobId, onClose }) {
         </header>
 
         <div className="flex-1 overflow-y-auto">
-          {query.isPending && <LoadingState label="Loading applicant…" />}
+          {query.isPending && (
+            <SkeletonGroup label="Loading applicant…" className="space-y-6 p-5">
+              <div className="flex gap-2">
+                <Skeleton className="h-7 w-24 rounded-full" />
+                <Skeleton className="h-9 w-40 rounded-lg" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-52" />
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-9 w-36 rounded-lg" />
+              </div>
+              {Array.from({ length: 3 }, (_, index) => (
+                <div key={index} className="space-y-2">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-16 rounded-lg" />
+                </div>
+              ))}
+            </SkeletonGroup>
+          )}
 
           {query.isError && (
             <p role="alert" className="m-5 rounded-lg bg-red-50 px-3.5 py-3 text-sm text-red-700">
@@ -158,6 +176,15 @@ export function ApplicantPanel({ applicationId, jobId, onClose }) {
                   >
                     <Mail className="text-ink-400 size-4" aria-hidden="true" />
                     {application.candidate.email}
+                  </a>
+                )}
+                {application.candidate?.profile?.phone && (
+                  <a
+                    href={`tel:${application.candidate.profile.phone.replace(/[^+0-9]/g, '')}`}
+                    className="hover:text-brand-700 flex items-center gap-2"
+                  >
+                    <Phone className="text-ink-400 size-4" aria-hidden="true" />
+                    {application.candidate.profile.phone}
                   </a>
                 )}
                 {application.candidate?.profile?.location && (

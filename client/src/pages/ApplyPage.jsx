@@ -8,7 +8,8 @@ import { Container } from '../components/layout/AppLayout.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { Field, Textarea } from '../components/ui/Field.jsx';
 import { CompanyLogo } from '../components/ui/Logo.jsx';
-import { ErrorState, LoadingState } from '../components/ui/States.jsx';
+import { ErrorState } from '../components/ui/States.jsx';
+import { FormSkeleton } from '../components/ui/Skeletons.jsx';
 import { cn } from '../lib/cn.js';
 
 const MAX_FILE_MB = 5;
@@ -60,7 +61,15 @@ export function ApplyPage() {
     setFile(candidate);
   };
 
-  if (jobQuery.isPending) return <LoadingState label="Loading role…" />;
+  if (jobQuery.isPending) {
+    return (
+      <Container className="py-8 sm:py-12">
+        <div className="mx-auto max-w-2xl">
+          <FormSkeleton fields={3} />
+        </div>
+      </Container>
+    );
+  }
 
   if (jobQuery.isError) {
     return (

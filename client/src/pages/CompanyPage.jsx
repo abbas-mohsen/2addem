@@ -6,7 +6,8 @@ import { errorMessage } from '../api/client.js';
 import { Container } from '../components/layout/AppLayout.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { CompanyLogo } from '../components/ui/Logo.jsx';
-import { EmptyState, ErrorState, LoadingState } from '../components/ui/States.jsx';
+import { EmptyState, ErrorState, Skeleton, SkeletonGroup } from '../components/ui/States.jsx';
+import { ListRowsSkeleton } from '../components/ui/Skeletons.jsx';
 import { JobCard } from '../features/jobs/JobCard.jsx';
 
 export function CompanyPage() {
@@ -17,7 +18,29 @@ export function CompanyPage() {
     queryFn: () => companiesApi.bySlug(slug),
   });
 
-  if (query.isPending) return <LoadingState label="Loading company…" />;
+  if (query.isPending) {
+    return (
+      <SkeletonGroup label="Loading company…">
+        <section className="border-ink-200 border-b bg-white">
+          <Container className="py-10 sm:py-14">
+            <div className="flex flex-wrap items-start gap-5">
+              <Skeleton className="size-14 shrink-0 rounded-lg" />
+              <div className="flex-1 space-y-3">
+                <Skeleton className="h-8 w-64" />
+                <Skeleton className="h-4 w-96 max-w-full" />
+                <Skeleton className="h-3.5 w-full max-w-2xl" />
+                <Skeleton className="h-3.5 w-3/4 max-w-xl" />
+              </div>
+            </div>
+          </Container>
+        </section>
+        <Container className="py-10 sm:py-14">
+          <Skeleton className="h-6 w-40" />
+          <ListRowsSkeleton className="mt-5" count={3} />
+        </Container>
+      </SkeletonGroup>
+    );
+  }
 
   if (query.isError) {
     return (

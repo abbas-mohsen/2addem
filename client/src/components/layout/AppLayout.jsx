@@ -1,11 +1,13 @@
 import { Outlet } from 'react-router-dom';
 import { Navbar } from './Navbar.jsx';
 import { Footer } from './Footer.jsx';
+import { RouteProgress } from './RouteProgress.jsx';
 import { cn } from '../../lib/cn.js';
 
 export function AppLayout() {
   return (
     <div className="flex min-h-screen flex-col">
+      <RouteProgress />
       <Navbar />
       <main className="flex-1">
         <Outlet />

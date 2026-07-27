@@ -67,6 +67,24 @@
 }
 
 @layer components {
+  /* Skeletons sweep rather than pulse: a moving highlight reads as "loading",
+     while a fading block can be mistaken for disabled content. */
+  .skeleton {
+    @apply bg-ink-100 relative overflow-hidden rounded-md;
+  }
+
+  .skeleton::after {
+    @apply absolute inset-0 -translate-x-full;
+    content: '';
+    background-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgb(255 255 255 / 0.65) 50%,
+      transparent 100%
+    );
+    animation: skeleton-sweep 1.6s ease-in-out infinite;
+  }
+
   .field-input {
     @apply border-ink-200 text-ink-900 placeholder:text-ink-400 focus:border-brand-500 focus:ring-brand-100 w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm transition focus:ring-4 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60;
   }
@@ -75,4 +93,37 @@
 /* Content rendered from plain-text job descriptions keeps its line breaks. */
 .prose-plain {
   @apply text-ink-700 leading-relaxed whitespace-pre-line;
+}
+
+@keyframes skeleton-sweep {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes route-progress {
+  0% {
+    transform: scaleX(0);
+  }
+  /* Creeps toward the end without ever arriving — the real completion snaps it. */
+  70% {
+    transform: scaleX(0.75);
+  }
+  100% {
+    transform: scaleX(0.92);
+  }
+}
+
+/* Respect users who have asked the OS for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

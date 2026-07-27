@@ -7,7 +7,8 @@ import { useAuthStore } from '../context/authStore.js';
 import { Container, PageHeader } from '../components/layout/AppLayout.jsx';
 import { Badge, JOB_STATUS_TONES } from '../components/ui/Badge.jsx';
 import { Button } from '../components/ui/Button.jsx';
-import { EmptyState, ErrorState, LoadingState } from '../components/ui/States.jsx';
+import { EmptyState, ErrorState } from '../components/ui/States.jsx';
+import { ListRowsSkeleton } from '../components/ui/Skeletons.jsx';
 import { Pagination } from '../components/ui/Pagination.jsx';
 import { EMPLOYMENT_LABELS, REMOTE_LABELS, formatRelative } from '../lib/format.js';
 import { cn } from '../lib/cn.js';
@@ -91,7 +92,7 @@ export function RecruiterJobsPage() {
       )}
 
       <div className="mt-5 space-y-3">
-        {query.isPending && <LoadingState label="Loading your jobs…" />}
+        {query.isPending && <ListRowsSkeleton count={3} />}
 
         {query.isError && (
           <ErrorState message={errorMessage(query.error)} onRetry={query.refetch} />

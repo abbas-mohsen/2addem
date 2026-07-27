@@ -8,7 +8,8 @@ import { Container } from '../components/layout/AppLayout.jsx';
 import { Badge } from '../components/ui/Badge.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { CompanyLogo } from '../components/ui/Logo.jsx';
-import { ErrorState, LoadingState } from '../components/ui/States.jsx';
+import { ErrorState } from '../components/ui/States.jsx';
+import { JobDetailSkeleton } from '../components/ui/Skeletons.jsx';
 import {
   EMPLOYMENT_LABELS,
   REMOTE_LABELS,
@@ -25,7 +26,7 @@ export function JobDetailPage() {
     queryFn: () => jobsApi.get(slug),
   });
 
-  if (query.isPending) return <LoadingState label="Loading role…" />;
+  if (query.isPending) return <JobDetailSkeleton />;
 
   if (query.isError) {
     const notFound = query.error?.response?.status === 404;
@@ -107,15 +108,16 @@ export function JobDetailPage() {
               </div>
             </dl>
 
-            {job.skills?.length > 0 && (
-              <div className="mt-6 flex flex-wrap gap-2">
-                {job.skills.map((skill) => (
-                  <Badge key={skill} tone="brand">
-                    {skill}
-                  </Badge>
-                ))}
-              </div>
-            )}
+            <div className="mt-6 flex flex-wrap gap-2">
+              {job.remoteAbroad && (
+                <Badge tone="success">Remote for a company abroad · paid from abroad</Badge>
+              )}
+              {job.skills?.map((skill) => (
+                <Badge key={skill} tone="brand">
+                  {skill}
+                </Badge>
+              ))}
+            </div>
           </div>
 
           <section className="mt-6 space-y-8">

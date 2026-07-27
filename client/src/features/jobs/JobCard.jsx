@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Banknote, MapPin } from 'lucide-react';
 import { Badge } from '../../components/ui/Badge.jsx';
+import { Skeleton } from '../../components/ui/States.jsx';
 import { CompanyLogo } from '../../components/ui/Logo.jsx';
 import {
   EMPLOYMENT_LABELS,
@@ -41,6 +42,7 @@ export function JobCard({ job }) {
 
           <div className="mt-3.5 flex flex-wrap items-center gap-2">
             <Badge tone="brand">{REMOTE_LABELS[job.remote]}</Badge>
+            {job.remoteAbroad && <Badge tone="success">Remote · paid from abroad</Badge>}
             <Badge tone="outline">{EMPLOYMENT_LABELS[job.employmentType]}</Badge>
             {job.skills?.slice(0, 3).map((skill) => (
               <Badge key={skill}>{skill}</Badge>
@@ -63,12 +65,17 @@ export function JobCardSkeleton() {
   return (
     <div className="border-ink-200 rounded-card border bg-white p-5">
       <div className="flex gap-4">
-        <div className="bg-ink-100 size-11 animate-pulse rounded-lg" />
+        <Skeleton className="size-11 shrink-0 rounded-lg" />
         <div className="flex-1 space-y-2.5">
-          <div className="bg-ink-100 h-4 w-1/2 animate-pulse rounded" />
-          <div className="bg-ink-100 h-3 w-1/3 animate-pulse rounded" />
-          <div className="bg-ink-100 h-3 w-2/3 animate-pulse rounded" />
+          <Skeleton className="h-4 w-1/2" />
+          <Skeleton className="h-3 w-1/3" />
+          <Skeleton className="h-3 w-2/3" />
+          <div className="flex gap-2 pt-1">
+            <Skeleton className="h-6 w-20 rounded-full" />
+            <Skeleton className="h-6 w-24 rounded-full" />
+          </div>
         </div>
+        <Skeleton className="hidden h-3 w-16 sm:block" />
       </div>
     </div>
   );

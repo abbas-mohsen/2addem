@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bell, CalendarClock, CheckCheck, FileText, ShieldAlert, TrendingUp } from 'lucide-react';
 import { notificationsApi } from '../../api/endpoints.js';
 import { errorMessage } from '../../api/client.js';
-import { Spinner } from '../../components/ui/States.jsx';
+import { Skeleton, SkeletonGroup } from '../../components/ui/States.jsx';
 import { formatRelative } from '../../lib/format.js';
 import { cn } from '../../lib/cn.js';
 
@@ -106,9 +106,17 @@ export function NotificationBell() {
 
           <div className="max-h-96 overflow-y-auto">
             {query.isPending && (
-              <div className="flex justify-center py-8">
-                <Spinner />
-              </div>
+              <SkeletonGroup label="Loading notifications…">
+                {Array.from({ length: 3 }, (_, index) => (
+                  <div key={index} className="flex gap-3 px-4 py-3">
+                    <Skeleton className="size-7 shrink-0 rounded-full" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-3.5 w-full" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
+                  </div>
+                ))}
+              </SkeletonGroup>
             )}
 
             {query.isError && (

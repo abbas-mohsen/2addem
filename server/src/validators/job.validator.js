@@ -14,6 +14,8 @@ const jobBase = z.object({
   salaryMin: z.coerce.number().min(0).max(100_000_000).optional(),
   salaryMax: z.coerce.number().min(0).max(100_000_000).optional(),
   currency: z.string().trim().length(3).toUpperCase().default('USD'),
+  freshUsd: z.coerce.boolean().default(true),
+  remoteAbroad: z.coerce.boolean().default(false),
   skills: z.array(z.string().trim().min(1).max(40)).max(30).default([]),
   status: z.enum(['draft', 'published']).default('draft'),
 });
@@ -39,6 +41,10 @@ export const listJobsQuerySchema = z.object({
   q: z.string().trim().max(120).optional(),
   location: z.string().trim().max(120).optional(),
   remote: z.enum(REMOTE_TYPES).optional(),
+  remoteAbroad: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((value) => (value === undefined ? undefined : value === 'true')),
   employmentType: z.enum(EMPLOYMENT_TYPES).optional(),
   company: z.string().trim().max(140).optional(),
   skills: z

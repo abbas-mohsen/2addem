@@ -2,7 +2,14 @@ import mongoose from 'mongoose';
 
 export const JOB_STATUSES = ['draft', 'published', 'closed'];
 export const REMOTE_TYPES = ['onsite', 'hybrid', 'remote'];
-export const EMPLOYMENT_TYPES = ['full-time', 'part-time', 'contract', 'internship'];
+// Freelance is a distinct arrangement here, not a flavour of contract.
+export const EMPLOYMENT_TYPES = [
+  'full-time',
+  'part-time',
+  'contract',
+  'internship',
+  'freelance',
+];
 
 const jobSchema = new mongoose.Schema(
   {
@@ -19,6 +26,14 @@ const jobSchema = new mongoose.Schema(
     salaryMin: { type: Number, min: 0 },
     salaryMax: { type: Number, min: 0 },
     currency: { type: String, trim: true, uppercase: true, maxlength: 3, default: 'USD' },
+    /* Since 2019 the lira is not how salaries are quoted here — roles advertise
+       in "fresh" USD paid outside the local banking system. Recruiters can turn
+       this off if they genuinely mean lira or local-bank dollars. */
+    freshUsd: { type: Boolean, default: true },
+    /* Remote work for a company based outside Lebanon, paid from abroad. It is
+       a different proposition to remote work for a local employer, and the one
+       filter candidates here ask for most. */
+    remoteAbroad: { type: Boolean, default: false, index: true },
     skills: { type: [String], default: [], index: true },
     status: { type: String, enum: JOB_STATUSES, default: 'draft', index: true },
     applicationCount: { type: Number, default: 0, min: 0 },

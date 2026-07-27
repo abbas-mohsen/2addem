@@ -9,6 +9,7 @@ export const EMPLOYMENT_LABELS = {
   'part-time': 'Part-time',
   contract: 'Contract',
   internship: 'Internship',
+  freelance: 'Freelance',
 };
 
 export const STAGE_LABELS = {
@@ -22,7 +23,7 @@ export const STAGE_LABELS = {
 
 export const STAGE_ORDER = ['applied', 'screening', 'interview', 'offer', 'hired', 'rejected'];
 
-export function formatSalary({ salaryMin, salaryMax, currency = 'USD' }) {
+export function formatSalary({ salaryMin, salaryMax, currency = 'USD', freshUsd = false }) {
   if (salaryMin == null && salaryMax == null) return null;
 
   const money = (value) =>
@@ -32,8 +33,16 @@ export function formatSalary({ salaryMin, salaryMax, currency = 'USD' }) {
       maximumFractionDigits: 0,
     }).format(value);
 
-  if (salaryMin != null && salaryMax != null) return `${money(salaryMin)} – ${money(salaryMax)}`;
-  return salaryMin != null ? `From ${money(salaryMin)}` : `Up to ${money(salaryMax)}`;
+  const range =
+    salaryMin != null && salaryMax != null
+      ? `${money(salaryMin)} – ${money(salaryMax)}`
+      : salaryMin != null
+        ? `From ${money(salaryMin)}`
+        : `Up to ${money(salaryMax)}`;
+
+  /* "Fresh" is the local term for dollars paid outside the domestic banking
+     system. On a Lebanese board, omitting it makes a figure ambiguous. */
+  return freshUsd && (currency ?? 'USD') === 'USD' ? `${range} fresh` : range;
 }
 
 export const INTERVIEW_LOCATION_LABELS = {

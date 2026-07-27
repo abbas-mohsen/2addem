@@ -8,14 +8,26 @@ import { Container, PageHeader } from '../components/layout/AppLayout.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { Field, Input, Select, Textarea } from '../components/ui/Field.jsx';
 import { CompanyLogo } from '../components/ui/Logo.jsx';
-import { ErrorState, LoadingState } from '../components/ui/States.jsx';
+import { ErrorState } from '../components/ui/States.jsx';
+import { FormSkeleton, PageHeaderSkeleton } from '../components/ui/Skeletons.jsx';
 
 const SIZES = ['1-10', '11-50', '51-200', '201-500', '501-1000', '1000+'];
 
 export function CompanyProfilePage() {
   const query = useQuery({ queryKey: ['my-company'], queryFn: companiesApi.mine });
 
-  if (query.isPending) return <LoadingState label="Loading company…" />;
+  if (query.isPending) {
+    return (
+      <Container className="py-10 sm:py-14">
+        <div className="mx-auto max-w-3xl">
+          <PageHeaderSkeleton />
+          <div className="mt-6">
+            <FormSkeleton fields={6} />
+          </div>
+        </div>
+      </Container>
+    );
+  }
 
   if (query.isError) {
     return (

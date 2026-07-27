@@ -14,6 +14,7 @@ const EMPTY_FILTERS = {
   q: '',
   location: '',
   remote: '',
+  remoteAbroad: '',
   employmentType: '',
   salaryMin: '',
   sort: 'newest',

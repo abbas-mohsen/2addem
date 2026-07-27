@@ -5,7 +5,7 @@ import { ApiError } from '../utils/ApiError.js';
 import { uniqueSlug } from '../utils/slug.js';
 
 const PUBLIC_FIELDS =
-  'title slug company location remote employmentType salaryMin salaryMax currency skills status applicationCount views publishedAt createdAt';
+  'title slug company location remote remoteAbroad employmentType salaryMin salaryMax currency freshUsd skills status applicationCount views publishedAt createdAt';
 
 export async function buildJobSlug(title) {
   return uniqueSlug(title, async (candidate) => Boolean(await Job.exists({ slug: candidate })));
@@ -17,6 +17,7 @@ async function buildPublicFilter(query) {
 
   if (query.q) filter.$text = { $search: query.q };
   if (query.remote) filter.remote = query.remote;
+  if (query.remoteAbroad !== undefined) filter.remoteAbroad = query.remoteAbroad;
   if (query.employmentType) filter.employmentType = query.employmentType;
   if (query.location) filter.location = { $regex: escapeRegex(query.location), $options: 'i' };
   if (query.skills?.length) {

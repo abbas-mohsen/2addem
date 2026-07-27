@@ -7,8 +7,10 @@ import { errorMessage, fieldErrors } from '../api/client.js';
 import { Container, PageHeader } from '../components/layout/AppLayout.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { Field, Input, Select, Textarea } from '../components/ui/Field.jsx';
-import { ErrorState, LoadingState } from '../components/ui/States.jsx';
+import { ErrorState } from '../components/ui/States.jsx';
+import { FormSkeleton, PageHeaderSkeleton } from '../components/ui/Skeletons.jsx';
 import { EMPLOYMENT_LABELS, REMOTE_LABELS } from '../lib/format.js';
+import { useLocationSuggestions } from '../hooks/useLocationSuggestions.js';
 
 const BLANK = {
   title: '',
@@ -21,6 +23,8 @@ const BLANK = {
   salaryMin: '',
   salaryMax: '',
   currency: 'USD',
+  freshUsd: true,
+  remoteAbroad: false,
   skills: '',
 };
 
@@ -50,6 +54,8 @@ function toFormState(job) {
     salaryMin: job.salaryMin ?? '',
     salaryMax: job.salaryMax ?? '',
     currency: job.currency ?? 'USD',
+    freshUsd: job.freshUsd ?? true,
+    remoteAbroad: job.remoteAbroad ?? false,
     skills: (job.skills ?? []).join(', '),
   };
 }
@@ -70,7 +76,18 @@ export function JobEditorPage() {
     enabled: isEdit,
   });
 
-  if (isEdit && existing.isPending) return <LoadingState label="Loading job…" />;
+  if (isEdit && existing.isPending) {
+    return (
+      <Container className="py-8 sm:py-12">
+        <div className="mx-auto max-w-3xl">
+          <PageHeaderSkeleton withActions={false} />
+          <div className="mt-6">
+            <FormSkeleton fields={6} />
+          </div>
+        </div>
+      </Container>
+    );
+  }
 
   if (isEdit && (existing.isError || existing.data === null)) {
     return (
@@ -101,6 +118,7 @@ function JobForm({ jobId, job }) {
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState(null);
   const [draftNotice, setDraftNotice] = useState(null);
+  const { data: locations = [] } = useLocationSuggestions();
 
   const aiDraft = useMutation({
     mutationFn: jobsApi.aiDraft,
@@ -165,6 +183,8 @@ function JobForm({ jobId, job }) {
       ...(form.salaryMin === '' ? {} : { salaryMin: Number(form.salaryMin) }),
       ...(form.salaryMax === '' ? {} : { salaryMax: Number(form.salaryMax) }),
       currency: form.currency.toUpperCase(),
+      freshUsd: form.freshUsd,
+      remoteAbroad: form.remoteAbroad,
       skills: toList(form.skills),
       status,
     });
@@ -295,14 +315,22 @@ function JobForm({ jobId, job }) {
           </Field>
 
           <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="Location">
+            <Field label="Location" hint="Suggestions cover Lebanese cities and governorates.">
               {(props) => (
-                <Input
-                  {...props}
-                  placeholder="Berlin, Germany"
-                  value={form.location}
-                  onChange={update('location')}
-                />
+                <>
+                  <Input
+                    {...props}
+                    list="editor-locations"
+                    placeholder="Beirut"
+                    value={form.location}
+                    onChange={update('location')}
+                  />
+                  <datalist id="editor-locations">
+                    {locations.map((location) => (
+                      <option key={location} value={location} />
+                    ))}
+                  </datalist>
+                </>
               )}
             </Field>
 
@@ -330,7 +358,7 @@ function JobForm({ jobId, job }) {
               )}
             </Field>
 
-            <Field label="Currency" hint="Three-letter code, e.g. EUR.">
+            <Field label="Currency" hint="Three-letter code, e.g. USD or EUR.">
               {(props) => (
                 <Input
                   {...props}
@@ -370,6 +398,45 @@ function JobForm({ jobId, job }) {
               )}
             </Field>
           </div>
+
+          {/* Two facts a Lebanese listing has to state explicitly. */}
+          <fieldset className="border-ink-200 space-y-3 rounded-lg border p-4">
+            <legend className="text-ink-800 px-1 text-sm font-medium">How this role pays</legend>
+
+            <label className="text-ink-700 flex cursor-pointer items-start gap-2.5 text-sm">
+              <input
+                type="checkbox"
+                className="border-ink-300 text-brand-600 focus:ring-brand-200 mt-0.5 size-4 rounded"
+                checked={form.freshUsd}
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, freshUsd: event.target.checked }))
+                }
+              />
+              <span>
+                Paid in fresh USD
+                <span className="text-ink-500 block text-xs">
+                  Shown on the listing as “fresh”. Uncheck for lira or local-bank dollars.
+                </span>
+              </span>
+            </label>
+
+            <label className="text-ink-700 flex cursor-pointer items-start gap-2.5 text-sm">
+              <input
+                type="checkbox"
+                className="border-ink-300 text-brand-600 focus:ring-brand-200 mt-0.5 size-4 rounded"
+                checked={form.remoteAbroad}
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, remoteAbroad: event.target.checked }))
+                }
+              />
+              <span>
+                Remote for a company based abroad
+                <span className="text-ink-500 block text-xs">
+                  Candidates filter on this more than any other option.
+                </span>
+              </span>
+            </label>
+          </fieldset>
 
           <Field label="Skills" hint="Comma separated — these power search on the board.">
             {(props) => (

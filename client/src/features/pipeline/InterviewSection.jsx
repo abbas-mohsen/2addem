@@ -6,7 +6,7 @@ import { errorMessage } from '../../api/client.js';
 import { Badge } from '../../components/ui/Badge.jsx';
 import { Button } from '../../components/ui/Button.jsx';
 import { Field, Input, Select, Textarea } from '../../components/ui/Field.jsx';
-import { Spinner } from '../../components/ui/States.jsx';
+import { Skeleton } from '../../components/ui/States.jsx';
 import { INTERVIEW_LOCATION_LABELS, formatDateTime } from '../../lib/format.js';
 import { cn } from '../../lib/cn.js';
 
@@ -74,7 +74,7 @@ export function InterviewSection({ applicationId, disabled }) {
         Interviews ({interviews.length})
       </h3>
 
-      {query.isPending && <Spinner />}
+      {query.isPending && <Skeleton className="h-20 rounded-lg" />}
 
       {error && (
         <p role="alert" className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">

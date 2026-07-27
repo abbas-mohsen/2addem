@@ -7,7 +7,8 @@ import { Container, PageHeader } from '../components/layout/AppLayout.jsx';
 import { Badge } from '../components/ui/Badge.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { Input, Textarea } from '../components/ui/Field.jsx';
-import { EmptyState, ErrorState, LoadingState } from '../components/ui/States.jsx';
+import { EmptyState, ErrorState } from '../components/ui/States.jsx';
+import { ListRowsSkeleton } from '../components/ui/Skeletons.jsx';
 import { Pagination } from '../components/ui/Pagination.jsx';
 import { formatRelative, initials } from '../lib/format.js';
 
@@ -98,7 +99,7 @@ export function TalentPoolPage() {
       )}
 
       <div className="mt-6 space-y-3">
-        {query.isPending && <LoadingState label="Loading your talent pool…" />}
+        {query.isPending && <ListRowsSkeleton count={3} />}
 
         {query.isError && (
           <ErrorState message={errorMessage(query.error)} onRetry={query.refetch} />

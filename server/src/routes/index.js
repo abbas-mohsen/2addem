@@ -7,11 +7,17 @@ import interviewRoutes from './interview.routes.js';
 import notificationRoutes from './notification.routes.js';
 import talentRoutes from './talent.routes.js';
 import adminRoutes from './admin.routes.js';
+import { LOCATION_SUGGESTIONS } from '../utils/locations.js';
 
 const router = Router();
 
 router.get('/health', (_req, res) => {
   res.json({ success: true, data: { status: 'ok', uptime: process.uptime() } });
+});
+
+// Static reference data the client uses for location suggestions.
+router.get('/meta/locations', (_req, res) => {
+  res.json({ success: true, data: { locations: LOCATION_SUGGESTIONS } });
 });
 
 router.use('/auth', authRoutes);

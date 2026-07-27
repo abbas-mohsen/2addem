@@ -2,9 +2,11 @@ import { Search, X } from 'lucide-react';
 import { Button } from '../../components/ui/Button.jsx';
 import { Input, Select } from '../../components/ui/Field.jsx';
 import { EMPLOYMENT_LABELS, REMOTE_LABELS } from '../../lib/format.js';
+import { useLocationSuggestions } from '../../hooks/useLocationSuggestions.js';
 
 export function JobFilters({ draft, onDraftChange, onSubmit, onReset, activeCount }) {
   const set = (key) => (event) => onDraftChange({ ...draft, [key]: event.target.value });
+  const { data: locations = [] } = useLocationSuggestions();
 
   return (
     <form
@@ -30,13 +32,21 @@ export function JobFilters({ draft, onDraftChange, onSubmit, onReset, activeCoun
           />
         </div>
 
-        <Input
-          type="search"
-          placeholder="City or country"
-          aria-label="Location"
-          value={draft.location}
-          onChange={set('location')}
-        />
+        <>
+          <Input
+            type="search"
+            list="location-suggestions"
+            placeholder="City or governorate"
+            aria-label="Location"
+            value={draft.location}
+            onChange={set('location')}
+          />
+          <datalist id="location-suggestions">
+            {locations.map((location) => (
+              <option key={location} value={location} />
+            ))}
+          </datalist>
+        </>
 
         <Button type="submit" className="md:w-auto">
           Search
@@ -83,14 +93,27 @@ export function JobFilters({ draft, onDraftChange, onSubmit, onReset, activeCoun
         </Select>
       </div>
 
-      {activeCount > 0 && (
-        <div className="flex justify-end">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        {/* The filter candidates here ask for most often. */}
+        <label className="text-ink-700 inline-flex cursor-pointer items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            className="border-ink-300 text-brand-600 focus:ring-brand-200 size-4 rounded"
+            checked={draft.remoteAbroad === 'true'}
+            onChange={(event) =>
+              onDraftChange({ ...draft, remoteAbroad: event.target.checked ? 'true' : '' })
+            }
+          />
+          Remote for a company abroad
+        </label>
+
+        {activeCount > 0 && (
           <Button type="button" variant="ghost" size="sm" onClick={onReset}>
             <X className="size-4" aria-hidden="true" />
             Clear {activeCount} filter{activeCount === 1 ? '' : 's'}
           </Button>
-        </div>
-      )}
+        )}
+      </div>
     </form>
   );
 }

@@ -16,7 +16,8 @@ import {
 } from './notification.service.js';
 import { STAGE_LABELS } from '../utils/labels.js';
 
-const CANDIDATE_CARD_FIELDS = 'name email avatarUrl profile.headline profile.location profile.skills';
+const CANDIDATE_CARD_FIELDS =
+  'name email avatarUrl profile.headline profile.location profile.phone profile.skills';
 
 export async function createApplication({ job, candidateId, resumeUrl, resumeName, body }) {
   if (job.status !== 'published') throw ApiError.badRequest('This job is not accepting applications');
