@@ -11,6 +11,7 @@ import { LoginPage } from './pages/LoginPage.jsx';
 import { RegisterPage } from './pages/RegisterPage.jsx';
 import { ApplyPage } from './pages/ApplyPage.jsx';
 import { MyApplicationsPage } from './pages/MyApplicationsPage.jsx';
+import { ProfilePage } from './pages/ProfilePage.jsx';
 import { RecruiterJobsPage } from './pages/RecruiterJobsPage.jsx';
 import { RecruiterDashboardPage } from './pages/RecruiterDashboardPage.jsx';
 import { JobEditorPage } from './pages/JobEditorPage.jsx';
@@ -44,6 +45,7 @@ export default function App() {
         <Route element={<ProtectedRoute roles={['candidate']} />}>
           <Route path="jobs/:slug/apply" element={<ApplyPage />} />
           <Route path="applications" element={<MyApplicationsPage />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
 
         {/* Recruiter pages need a company; admins have none, so they get the

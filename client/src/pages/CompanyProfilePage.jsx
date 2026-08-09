@@ -11,6 +11,7 @@ import { CompanyLogo } from '../components/ui/Logo.jsx';
 import { ErrorState } from '../components/ui/States.jsx';
 import { FormSkeleton, PageHeaderSkeleton } from '../components/ui/Skeletons.jsx';
 import { COMPANY_SIZES } from '../lib/format.js';
+import { isUrl } from '../lib/validate.js';
 import { useT } from '../i18n/index.jsx';
 
 export function CompanyProfilePage() {
@@ -74,15 +75,6 @@ function CompanyForm({ company }) {
     setForm((current) => ({ ...current, [key]: event.target.value }));
     setErrors((current) => ({ ...current, [key]: undefined }));
     setSaved(false);
-  };
-
-  const isUrl = (value) => {
-    try {
-      new URL(value);
-      return true;
-    } catch {
-      return false;
-    }
   };
 
   const handleSubmit = (event) => {

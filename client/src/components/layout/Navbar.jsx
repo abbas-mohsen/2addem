@@ -16,6 +16,7 @@ const LINKS_BY_ROLE = {
   candidate: [
     { to: '/jobs', key: 'nav.browseJobs' },
     { to: '/applications', key: 'nav.myApplications' },
+    { to: '/profile', key: 'nav.profile' },
   ],
   recruiter: [
     { to: '/recruiter', key: 'nav.dashboard', end: true },

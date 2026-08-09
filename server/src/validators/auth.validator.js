@@ -40,7 +40,9 @@ export const updateProfileSchema = z.object({
         .regex(/^[+0-9 ()-]*$/, 'Use digits, spaces and + only')
         .optional(),
       skills: z.array(z.string().trim().min(1).max(40)).max(30).optional(),
-      experienceYears: z.coerce.number().min(0).max(60).optional(),
+      // null clears the field. The null branch has to come first: z.coerce
+      // would otherwise turn null into 0 and store "no experience".
+      experienceYears: z.union([z.null(), z.coerce.number().min(0).max(60)]).optional(),
       links: z
         .object({
           website: z.string().trim().url().or(z.literal('')).optional(),
