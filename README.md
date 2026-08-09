@@ -78,6 +78,20 @@ Then open <http://localhost:5173>.
 Vite proxies `/api` and `/uploads` to the API in development, so the browser stays on one origin
 and the HTTP-only refresh cookie works without any cross-site cookie setup.
 
+### Tests
+
+```bash
+npm test          # server API suite
+```
+
+The suite runs on Node's built-in test runner — no framework dependency — and drives a real Express
+app over HTTP against a **separate `joinclone_test` database**, which it empties between files. It
+refuses to start if the database name does not end in `_test`, so it cannot eat your demo data. It
+covers auth and session lifetime, the candidate profile endpoint, the ownership checks that keep two
+companies apart, and the response envelope.
+
+There are no client tests yet.
+
 ### Other scripts
 
 ```bash
@@ -135,6 +149,7 @@ Secrets are never committed; `.env` is gitignored and `.env.example` files docum
     /validators   Zod schemas, one per resource
     /middleware   auth/roles, validation, uploads, error handler
     /utils        ApiError, asyncHandler, response envelopes, slugs, logger
+  /tests          API suite on node:test, plus its harness
   /uploads        resumes in dev (gitignored)
 /client
   /src
@@ -308,7 +323,7 @@ All routes are under `/api`. Success responses are `{ success: true, data, meta?
 | POST   | `/auth/refresh`  | cookie | Returns a fresh access token      |
 | POST   | `/auth/logout`   | cookie | Revokes all refresh tokens        |
 | GET    | `/auth/me`       | auth   |                                   |
-| PATCH  | `/auth/me`       | auth   | Name, avatar, profile fields      |
+| PATCH  | `/auth/me`       | auth   | Name, avatar, locale, profile fields. `profile` is merged, not replaced; `experienceYears: null` clears it |
 
 ### Jobs
 
@@ -420,5 +435,10 @@ Sign-in and sign-up are rate limited, so many rapid account switches will start 
 - [x] **Arabic + RTL** — i18n layer with Arabic plurals, a language switcher, logical-property
       layout, direction-aware icons, localised dates/salaries/enums, notifications rendered from
       stored parameters, and every page translated.
+- [x] **Candidate profile** — the page candidates edit at `/profile`: headline, bio, location, phone,
+      skills, years of experience and links, all of it what recruiters already read beside an
+      application.
+- [x] **Server test suite** — auth and session lifetime, the profile endpoint, ownership checks and
+      the response envelope, on Node's built-in runner.
 
 Explicitly out of scope: multiposting to external job boards, payments, and real AI generation.

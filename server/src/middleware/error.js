@@ -29,6 +29,17 @@ function normalize(error) {
     });
   }
 
+  // body-parser rejects malformed or oversized bodies before any route runs.
+  // Without a branch here a bad client request reads as a server fault: logged
+  // as an error, answered with a 500, and echoed with a stack in development.
+  if (error.type === 'entity.parse.failed') {
+    return ApiError.badRequest('Request body is not valid JSON', { code: 'INVALID_JSON' });
+  }
+
+  if (error.type === 'entity.too.large') {
+    return new ApiError(413, 'Request body is too large', { code: 'PAYLOAD_TOO_LARGE' });
+  }
+
   if (error instanceof multer.MulterError) {
     const message =
       error.code === 'LIMIT_FILE_SIZE'

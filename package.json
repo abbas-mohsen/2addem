@@ -17,6 +17,7 @@
     "build": "npm run build -w client",
     "seed": "npm run seed -w server",
     "seed:fresh": "npm run seed -w server -- --fresh",
+    "test": "npm run test -w server",
     "lint": "eslint .",
     "format": "prettier --write ."
   },

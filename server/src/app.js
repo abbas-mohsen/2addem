@@ -24,7 +24,9 @@ export function createApp() {
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
 
-  if (!env.isProduction) app.use(morgan('dev'));
+  // Development only: production uses its own access logs, and a test run would
+  // bury the reporter under a request line per assertion.
+  if (env.NODE_ENV === 'development') app.use(morgan('dev'));
 
   app.use('/uploads', express.static(env.uploadRoot, { index: false, maxAge: '1h' }));
   app.use('/api', routes);

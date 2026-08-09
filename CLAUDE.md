@@ -10,6 +10,7 @@ npm workspaces monorepo. Run everything from the repo root.
 npm install            # installs both workspaces
 npm run seed:fresh     # wipe and rebuild demo data (see Demo data below)
 npm run dev            # API on :4000 and Vite on :5173, together
+npm test               # server API suite (see Tests below)
 npm run lint           # eslint across both workspaces
 npm run build          # production build of the client
 npm run format         # prettier
@@ -19,10 +20,27 @@ npm run format         # prettier
 
 ### Tests
 
-**There is no committed test suite yet, and no `npm test` script.** Verification so far has been done
-with throwaway Node scripts driving the running app: HTTP calls against `localhost:4000/api` for the
-API, and headless Edge over the Chrome DevTools Protocol for the UI. If you add tests, that is the
-shape that has worked; a few hard-won details:
+`npm test` runs the server suite in `server/tests` on Node's built-in runner — no test framework
+dependency. It covers auth and session lifetime, the profile endpoint, the ownership half of
+authorisation, and the response envelope. **There are no client tests yet.**
+
+The tests drive a real Express app on an ephemeral port over HTTP, against a real MongoDB. They are
+not unit tests by design: this app's interesting behaviour lives in middleware ordering, cookies and
+status codes, which in-process function calls would skip.
+
+- `tests/helpers/env.mjs` is preloaded with `--import` so it beats `dotenv` to `process.env` —
+  `dotenv` does not overwrite variables that are already set. It forces a `joinclone_test` database,
+  disables email, and raises `AUTH_RATE_LIMIT`, which is what that knob is for. Do not add sleeps.
+- `startTestServer()` **refuses to run unless the database name ends in `_test`**, because
+  `resetDatabase()` empties every collection. Never remove that guard.
+- Files run with `--test-concurrency=1`; they share one database and each wipes it in `before`.
+- Fixtures go through `/auth/register` rather than writing documents directly, so the factories break
+  if registration does.
+- Node's runner treats *everything* under a directory named `test/` as a test file, which is why the
+  directory is `tests/` and the script passes an explicit `tests/**/*.test.js` glob.
+
+For UI work there is no committed harness; verification has been done with throwaway scripts driving
+headless Edge over the Chrome DevTools Protocol. A few hard-won details if you write one:
 
 - **Do not throttle the network to observe skeletons.** The Vite dev server ships hundreds of
   unbundled modules and each pays the added latency, so the app never boots inside the sample window.
@@ -32,8 +50,8 @@ shape that has worked; a few hard-won details:
   JavaScript.
 - Section headings are rendered uppercase by CSS, and `innerText` reflects that — match
   case-insensitively.
-- The auth rate limit is configurable precisely so test runs do not trip it; raise `AUTH_RATE_LIMIT`
-  in `server/.env` rather than adding sleeps.
+- React inputs ignore a plain `element.value = x`; go through the native setter and dispatch an
+  `input` event, or the component's state never changes.
 
 ### Prerequisites
 
@@ -60,8 +78,13 @@ which is why the middleware redefines the property rather than assigning to it.
 
 Access token in memory on the client, refresh token in an HTTP-only cookie scoped to `/api/auth`.
 `User.tokenVersion` is bumped on logout and on admin deactivation, which invalidates outstanding
-refresh tokens — that is how "deactivate a user" ends their live sessions immediately rather than
-waiting for expiry.
+refresh tokens. Two consequences worth knowing before you change either:
+
+- An **access token already in memory keeps working until it expires** — `requireAuth` does not
+  compare its `version` claim against the user. Logout revokes the ability to renew, not the current
+  token. This is the usual short-lived-token trade-off, and `tests/auth.test.js` pins it.
+- **Deactivation is what ends a live session immediately**, and it does so through the `isActive`
+  check in `requireAuth`, which reloads the user on every request — not through `tokenVersion`.
 
 Authorisation is two layers, and both matter: `requireRole(...)` for the coarse check, then an
 ownership lookup in the service (`findOwnedJob`, `findApplicationForRecruiter`, …) that scopes the
